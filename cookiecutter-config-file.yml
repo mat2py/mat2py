@@ -1,0 +1,13 @@
+# This file contains values from Cookiecutter
+
+default_context:
+  project_name: "mat2py"
+  project_description: "mat2py mean to be drop-in replacement of Matlab by wrapping Numpy/Scipy/... packages."
+  organization: "mat2py"
+  license: "MIT"
+  minimal_python_version: 3.7
+  github_name: "mat2py"
+  email: "chaoqingwang.nick@gmail.com"
+  version: "0.0.1"
+  line_length: "88"
+  create_example_template: "none"
