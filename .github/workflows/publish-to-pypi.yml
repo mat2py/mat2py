@@ -1,13 +1,12 @@
 name: Publish package
 
 on:
-  push:
-    branches-ignore:
-      - 'cache/**'
+  release:
+    types: [created]
 
 jobs:
   build:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'release' && github.event.action == 'created'
     runs-on: ubuntu-latest
     strategy:
       matrix:
