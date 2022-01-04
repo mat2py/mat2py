@@ -3,13 +3,14 @@ import typing
 from typing import Callable, Tuple, Union
 
 import operator
+from functools import reduce
 
 import numpy as np
 
-__all__ = ["pi", "eps", "end", "colon"]
+__all__ = ["pi", "eps", "end", "I"]
 
 pi = np.pi
-eps = np.finfo(float).eps
+eps = np.finfo(float).eps * 10.0  # we use a little larger eps than Numpy
 
 
 class End:
@@ -77,72 +78,184 @@ end = End()
 
 
 class Colon:
+    """colon equivelent in Matlab"""
+
+    """ It should be (start, stop) format or (start, step, stop) format. """
+    """ Colon used for array indexing (1-based Matlab format) will be converted to slice (0-based Python format); """
+    """ Colon used for generating sequence will be converted to np.arange while keeping the right end point."""
+
     def __init__(
         self, start: (float, End), stop: (float, End), step: (float, End) = None
     ):
-        self.range = (
+        assert start is not None and stop is not None
+        self.range = (  # in (start, stop, step) order
             start,
-            1 if step is None else stop,
-            stop if step is None else step,
+            stop,
+            1 if step is None else step,
         )
 
+        # TODO: general function for converting to MatArray
+
+    def __sub__(self, i: int):
+        if isinstance(self.range, tuple):
+            return self.__class__(self.range[0] - i, self.range[1] - i, self.range[1])
+        else:
+            return self.range - i
+
     def __iter__(self):
-        if not isinstance(self.range, np.ndarray):
+        if isinstance(self.range, tuple):
             self.to_array()
         return iter(self.range)
 
-    def to_slice(self, length=None) -> slice:
-        assert isinstance(self.range, tuple)
+    def to_index(self, length=None) -> slice:
+        if isinstance(self.range, tuple):
+            start, stop, step = map(
+                round,
+                tuple(
+                    expr(length) if isinstance(expr, End) else expr
+                    for expr in self.range
+                ),
+            )
+            # TODO: validation on [1, length]
+            if stop > length:
+                raise ValueError(f"out of the dimension")
+            if start < 1:
+                raise ValueError(f"index must be positive integer")
 
-        start, step, stop = map(
-            round,
-            tuple(
-                expr(length) if isinstance(expr, End) else expr for expr in self.range
-            ),
-        )
+            return slice(
+                start - 1,
+                max(stop, start - 1) if step > 0 else min(stop, start - 1),
+                step,
+            )
+        else:
+            return np.round(self.range).astype(int) - 1
 
-        if stop > length:
-            raise ValueError(f"out of the dimension")
-        if start < 1:
-            raise ValueError(f"index must be positive integer")
-        start -= 1
-        return slice(start, max(stop, start), step)
-
-    def to_array(self) -> "Array":
-        if not isinstance(self.range, np.ndarray):
+    def to_array(self) -> "MatArray":
+        if isinstance(self.range, tuple):
             if any(isinstance(expr, End) for expr in self.range):
                 raise ValueError("range can not contain end expression")
-            start, step, stop = self.range
-            self.range = np.arange(start, stop + step / 10.0, step).view(Array)
+
+            start, stop, step = self.range
+            stop += 1 if np.issubdtype(np.array(self.range).dtype, np.integer) else eps
+
+            self.range = np.arange(start, stop, step).view(MatArray)
 
         return self.range
 
 
 def colon(*args):
-    return Colon(*args)
+    if len(args) == 2:
+        return Colon(*args)
+    elif len(args) == 3:
+        return Colon(args[0], args[2], args[1])
+    if len(args) == 1 and isinstance(args[0], slice):
+        item = args[0]
+        if item.step is not None:
+            return Colon(item.start, item.step, item.stop)
+        else:
+            return Colon(
+                item.start if item.start is not None else 1,
+                item.stop if item.stop is not None else end,
+                1,
+            )
+    else:
+        raise ValueError("colon can only accept i:k or i:j:k format")
 
 
-class Array(np.ndarray):
+class MatIndex:
+    def __init__(self, index):
+        self.item = index.item if isinstance(index, MatIndex) else index
+
+    @staticmethod
+    def __getitem__(item):
+        return MatIndex(item)
+
+    @staticmethod
+    def __convert(item: (Colon, slice, End, "MatIndex", int, np.ndarray), length: int):
+        if isinstance(item, Colon):
+            return item.to_index(length)
+        elif isinstance(item, slice):
+            return colon(item).to_index(length)
+        elif isinstance(item, End):
+            return item(length) - 1
+        elif isinstance(item, MatIndex):
+            return item((length,))
+        else:
+            return item - 1
+
+    def __call__(self, shape: Tuple[int]):
+        item = self.item if isinstance(self.item, tuple) else (self.item,)
+
+        if len(item) == len(shape):
+            return tuple(self.__convert(i, l) for i, l in zip(item, shape))
+        if len(item) == 1:  # line index
+            return ind2sub(shape, self.__convert(item[0], reduce(operator.mul, shape)))
+        elif len(self.item) < len(shape):
+            raise NotImplementedError
+
+        raise ValueError("index exceed the Array dimention")
+
+
+I = MatIndex(None)
+
+
+def ind2sub(shape: tuple, index: (typing.Iterable[int], int, slice)):
+    if len(shape) == 1:
+        return index
+    elif len(shape) == 2:
+        d1, d2 = shape
+        index = (
+            np.array(index).reshape(-1)
+            if not isinstance(index, slice)
+            else np.arange(index.start, index.stop, index.step)
+        )
+        return (index % d1, index // d1)
+    else:
+        # TODO: take care of fortran order
+        raise NotImplementedError
+
+
+class MatArray(np.ndarray):
     """https://numpy.org/doc/stable/user/basics.subclassing.html"""
 
-    def __call__(self, item):
-        return self.__getitem__(item)
+    def __call__(self, item, *rest_item):
+        # TODO: we can not differicate `a(1)` and `a(1,)` while `a[1]` and `a[1,]` have difference
+        item = [item, *rest_item] if rest_item else item
+        return super().__getitem__(MatIndex(item)(self.shape))
 
     def __iter__(self):
         raise NotImplementedError
 
     def __getitem__(self, item):
-        return super().__getitem__(item - 1)
+        if isinstance(item, End):
+            item = MatIndex(item)
+        if isinstance(item, MatIndex):
+            item = item(self.shape)
+        return super().__getitem__(item)
 
     def __setitem__(self, key, value):
+        if isinstance(key, End):
+            key = MatIndex(key)
+        if isinstance(key, MatIndex):
+            key = key(self.shape)
+
         return super().__setitem__(key, value)
 
 
 def array(*args, **kwargs):
-    return np.array(*args, **kwargs).view(Array)
+    return np.array(*args, **kwargs).view(MatArray)
 
 
-if __name__ == "__main__":
-    x = array([1, 2, 3])
+clc = None
+clear = None
+disp = print
+error = print
+exp = np.exp
+linspace = np.linspace
+ndgrid = np.meshgrid
 
-    print(x(1), x.shape)
+numel = np.size
+randn = np.random.randn
+rng = np.random.default_rng
+sinc = np.sinc
+size = np.shape

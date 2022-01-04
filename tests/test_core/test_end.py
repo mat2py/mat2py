@@ -43,6 +43,6 @@ def test_end(expr, size, expected):
 def test_colon(args, expected):
     length = 10
     if isinstance(expected, slice):
-        assert colon(*args).to_slice(length) == expected
+        assert colon(*args).to_index(length) == expected
     else:
         assert np.all(colon(*args).to_array() == expected)
