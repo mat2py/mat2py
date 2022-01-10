@@ -1,10 +1,10 @@
 [[package]]
 name = "astroid"
-version = "2.9.0"
+version = "2.9.3"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
-python-versions = "~=3.6"
+python-versions = ">=3.6.2"
 
 [package.dependencies]
 lazy-object-proxy = ">=1.4.0"
@@ -716,8 +716,8 @@ content-hash = "c3f68986331df0e996f97bff1a9099120632d714d69028942424ebbc5cc48c1e
 
 [metadata.files]
 astroid = [
-    {file = "astroid-2.9.0-py3-none-any.whl", hash = "sha256:776ca0b748b4ad69c00bfe0fff38fa2d21c338e12c84aa9715ee0d473c422778"},
-    {file = "astroid-2.9.0.tar.gz", hash = "sha256:5939cf55de24b92bda00345d4d0659d01b3c7dafb5055165c330bc7c568ba273"},
+    {file = "astroid-2.9.3-py3-none-any.whl", hash = "sha256:506daabe5edffb7e696ad82483ad0228245a9742ed7d2d8c9cdb31537decf9f6"},
+    {file = "astroid-2.9.3.tar.gz", hash = "sha256:1efdf4e867d4d8ba4a9f6cf9ce07cd182c4c41de77f23814feb27ca93ca9d877"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
