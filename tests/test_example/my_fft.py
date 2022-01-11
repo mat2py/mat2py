@@ -3,13 +3,17 @@
 import mat2py.core as mp
 from mat2py.core import (
     I,
+    M,
     clc,
     clear,
+    colon,
     disp,
     end,
     error,
     exp,
     linspace,
+    mrdivide,
+    mtimes,
     ndgrid,
     numel,
     pi,
@@ -28,22 +32,37 @@ def my_fft(x):
         Xp = my_fft(xp)
         Xpp = my_fft(xpp)
         Wn = exp(
-            mp.mrdivide(mp.dot(mp.dot((-1j) * 2, pi), (colon(0, ((N / 2) - 1))).T), N)
+            mrdivide(mtimes(mtimes((-1j) * 2, pi), (colon(0, ((N / 2) - 1))).T), N)
         )
         tmp = Wn * Xpp
-        X = mp.stack((Xp + tmp, Xp - tmp))
+        X = M[
+            Xp + tmp,
+            Xp - tmp,
+        ]
     else:
         if N == 2:
-            X = mp.dot(mp.stack(([1, 1], [1, -1])), x)
+            X = mtimes(
+                M[
+                    [1, 1],
+                    [1, -1],
+                ],
+                x,
+            )
         elif N == 4:
-            X = mp.dot(
-                mp.dot(
-                    mp.stack(
-                        ([1, 0, 1, 0], [0, 1, 0, -1j], [1, 0, -1, 0], [0, 1, 0, 1j])
-                    ),
-                    mp.stack(
-                        ([1, 0, 1, 0], [1, 0, -1, 0], [0, 1, 0, 1], [0, 1, 0, -1])
-                    ),
+            X = mtimes(
+                mtimes(
+                    M[
+                        [1, 0, 1, 0],
+                        [0, 1, 0, -1j],
+                        [1, 0, -1, 0],
+                        [0, 1, 0, 1j],
+                    ],
+                    M[
+                        [1, 0, 1, 0],
+                        [1, 0, -1, 0],
+                        [0, 1, 0, 1],
+                        [0, 1, 0, -1],
+                    ],
                 ),
                 x,
             )
@@ -56,13 +75,13 @@ def main():
     clear
     clc
     rng("default")
-    t = I[1:10]
+    t = colon(1, 10)
     x = randn(size(t)).T
     ts = linspace(-5, 15, 2 ^ 9)
     Ts, T = ndgrid(ts, t)
-    y = mp.dot(sinc(Ts - T), x)
+    y = mtimes(sinc(Ts - T), x)
     f = my_fft(y)
-    disp(mp.array([y, f]))
+    disp(M[[y, f]])
 
 
 if __name__ == "__main__":

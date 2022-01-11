@@ -45,4 +45,19 @@ def test_colon(args, expected):
     if isinstance(expected, slice):
         assert colon(*args).to_index(length) == expected
     else:
-        assert np.all(colon(*args).to_array() == expected)
+        assert np.all(colon(*args).view(expected.dtype) == expected)
+
+
+def test_colon_attr():
+    seq = colon(1, 10)
+
+    assert seq.to_index(10) == slice(0, 10, 1)
+    assert seq[1] == 2
+    assert seq.size == 10
+    assert seq.shape == (10,)
+    assert seq.sum() == (1 + 10) * 10 / 2
+    assert np.allclose(seq.to_index(10), np.arange(0, 10))
+    assert np.allclose(list(iter(seq)), np.arange(1, 11))
+
+    seq = colon(1, 10)
+    seq[:] = colon(2, 11)

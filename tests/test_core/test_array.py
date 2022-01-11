@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 import mat2py.core as mp
-from mat2py.core import I, colon, end
+from mat2py.core import I, M, colon, end
 
 
 def test_array():
@@ -36,3 +36,9 @@ def test_array():
     assert np.allclose(
         d2[I[:, 2]], np.array([3, 4, 5])
     )  # TODO: do we need to take care of row/column vector?
+
+    assert np.allclose(M[[]], np.array([]))
+    assert np.allclose(M[1, 2], np.array([1, 2]).reshape(-1, 1))
+    assert np.allclose(M[[1, 2]], np.array([1, 2]))
+    assert np.allclose(M[[1, 2], [3, 4]], np.array([[1, 2], [3, 4]]))
+    assert np.allclose(M[[1, 2, 3], [3, M[[4, 5]]]], np.array([[1, 2, 3], [3, 4, 5]]))
