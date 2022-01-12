@@ -76,16 +76,21 @@ end = End()
 
 
 class MatIndex:
+    def __new__(cls, index):
+        return index if isinstance(index, MatIndex) else super().__new__(cls)
+
     def __init__(self, index):
-        self.item = index.item if isinstance(index, MatIndex) else index
+        if self is not index:
+            self.item = index
 
     @staticmethod
     def __getitem__(item):
         return MatIndex(item)
 
     @staticmethod
-    def __convert(
-        item: ("Colon", slice, End, "MatIndex", int, np.ndarray), length: int
+    def __evaluate__(
+        item: ("Colon", slice, End, "MatIndex", int, np.ndarray, "MatCreator"),
+        length: int,
     ):
         if isinstance(item, Colon):
             return item.to_index(length)
@@ -95,6 +100,8 @@ class MatIndex:
             return item(length) - 1
         elif isinstance(item, MatIndex):
             return item((length,))
+        elif isinstance(item, MatCreator):
+            return item.to_index(length)
         else:
             return item - 1
 
@@ -102,9 +109,11 @@ class MatIndex:
         item = self.item if isinstance(self.item, tuple) else (self.item,)
 
         if len(item) == len(shape):
-            return tuple(self.__convert(i, l) for i, l in zip(item, shape))
+            return tuple(self.__evaluate__(i, l) for i, l in zip(item, shape))
         if len(item) == 1:  # line index
-            return ind2sub(shape, self.__convert(item[0], reduce(operator.mul, shape)))
+            return ind2sub(
+                shape, self.__evaluate__(item[0], reduce(operator.mul, shape))
+            )
         elif len(self.item) < len(shape):
             raise NotImplementedError
 
@@ -156,17 +165,32 @@ class MatArray(np.ndarray):
         return super().__setitem__(key, value)
 
 
+def _contains_end(item):
+    if isinstance(item, (End, MatCreator)):
+        return True
+    elif isinstance(item, slice):
+        return colon(item).__contains_end__()
+    elif isinstance(item, Colon):
+        return item.__contains_end__()
+    return False
+
+
 class MatCreator(object):
     @staticmethod
     def __getitem__(args):
-        non_empty = lambda i: not (
-            isinstance(i, (list, np.ndarray, tuple)) and len(i) == 0
-        )
-        filter_row = lambda r: (
-            tuple(i for i in r if non_empty(i))
-            if isinstance(r, (tuple, list))
-            else ((r,) if non_empty(r) else tuple())
-        )
+        return MatCreator(args)
+
+    @staticmethod
+    def __evaluate__(args, item_map=lambda x: x):
+        def non_empty(i):
+            return not (isinstance(i, (list, np.ndarray, tuple)) and len(i) == 0)
+
+        def filter_row(r):
+            return (
+                tuple(i for i in map(item_map, r) if non_empty(i))
+                if isinstance(r, (tuple, list))
+                else ((item_map(r),) if non_empty(item_map(r)) else tuple())
+            )
 
         rows = tuple(
             np.hstack(
@@ -185,8 +209,42 @@ class MatCreator(object):
         else:
             return np.array([]).view(MatArray)
 
+    def __new__(cls, args):
+        if args is None:
+            return super().__new__(cls)
 
-M = MatCreator()
+        contains_end = any(
+            _contains_end(i)
+            for i in chain.from_iterable(
+                (row if isinstance(row, tuple) else (row,))
+                for row in (args if isinstance(args, (tuple, list)) else (args,))
+            )
+        )
+
+        if contains_end:
+            return super().__new__(cls)
+
+        if isinstance(args, slice):
+            return colon(args).view(MatArray)
+
+        return cls.__evaluate__(args)
+
+    def __init__(self, args):
+        self.args = args
+
+    def to_index(self, length=None) -> MatArray:
+        def item_map(i):
+            try:
+                i = MatIndex.__evaluate__(i, length)
+
+                return np.arange(i.start, i.stop, i.step) if isinstance(i, slice) else i
+            except TypeError:
+                return i
+
+        return self.__evaluate__(self.args, item_map)
+
+
+M = MatCreator(None)
 
 
 def array(*args, **kwargs):
@@ -214,11 +272,11 @@ class ColonMeta(type):
     @staticmethod
     def is_descriptor(obj):
         """obj can be instance of descriptor or the descriptor class"""
-        return bool(set(["__get__", "__set__", "__delete__"]).intersection(dir(obj)))
+        return bool({"__get__", "__set__", "__delete__"}.intersection(dir(obj)))
 
     @staticmethod
     def is_data_descriptor(attr):
-        return bool(set(["__set__", "__delete__"]) & set(dir(attr)))
+        return bool({"__set__", "__delete__"} & set(dir(attr)))
 
     def __new__(mcs, name, bases, dct):
         base = bases[0]
@@ -261,19 +319,19 @@ class Colon(MatArray, metaclass=ColonMeta):
         cls, start: (float, End), stop: (float, End), step: (float, End) = None
     ):
         assert start is not None and stop is not None
-        __slice_expr = (  # in (start, stop, step) order
+        slice_expr = (  # in (start, stop, step) order
             start,
             stop,
             1 if step is None else step,
         )
-        has_end = any(isinstance(expr, End) for expr in __slice_expr)
+        has_end = any(isinstance(expr, End) for expr in slice_expr)
 
         obj = np.ndarray.__new__(
             Colon,
             (0,),  # lazy evaluation
-            dtype=int if has_end else np.array(__slice_expr).dtype,
+            dtype=int if has_end else np.array(slice_expr).dtype,
         )
-        obj.__slice_expr = __slice_expr
+        obj._slice_expr = slice_expr
         return obj
 
     def __array_finalize__(self, obj):
@@ -282,31 +340,31 @@ class Colon(MatArray, metaclass=ColonMeta):
             return
 
         # slice or view way
-        self.__slice_expr = None
+        self._slice_expr = None
 
     @property
     def size(self):
-        if self.__slice_expr is not None:
-            start, stop, step = self.__convert_to_slice()
+        if self._slice_expr is not None:
+            start, stop, step = self._convert_to_slice()
             return np.floor((stop - start) / step).astype(int)
         else:
             return super().size
 
-    def __contains_end(self):
-        return self.__slice_expr is not None and any(
-            isinstance(expr, End) for expr in self.__slice_expr
+    def __contains_end__(self):
+        return self._slice_expr is not None and any(
+            isinstance(expr, End) for expr in self._slice_expr
         )
 
     def __sub__(self, i: int):
-        if self.__slice_expr is not None:
-            start, stop, step = self.__slice_expr
+        if self._slice_expr is not None:
+            start, stop, step = self._slice_expr
             return self.__class__(start - i, stop - i, step)
         else:
             return self.view(MatArray).__sub__(i)
 
-    def __convert_to_slice(self, length=None, eps=None) -> tuple:
-        start, stop, step = self.__slice_expr
-        has_end = self.__contains_end()
+    def _convert_to_slice(self, length=None, eps=None) -> tuple:
+        start, stop, step = self._slice_expr
+        has_end = self.__contains_end__()
 
         if length is None and has_end:
             raise ValueError(
@@ -316,7 +374,7 @@ class Colon(MatArray, metaclass=ColonMeta):
         elif has_end:
             start, stop, step = (
                 expr(length) if isinstance(expr, End) else expr
-                for expr in self.__slice_expr
+                for expr in self._slice_expr
             )
 
         stop += (
@@ -332,10 +390,8 @@ class Colon(MatArray, metaclass=ColonMeta):
         return start, stop, step
 
     def to_index(self, length=None) -> slice:
-        if self.__slice_expr is not None:
-            start, stop, step = map(
-                round, self.__convert_to_slice(length=length, eps=1)
-            )
+        if self._slice_expr is not None:
+            start, stop, step = map(round, self._convert_to_slice(length=length, eps=1))
             start -= 1
             stop -= 1
             # TODO: validation on [1, length]
@@ -352,22 +408,41 @@ class Colon(MatArray, metaclass=ColonMeta):
         else:
             return np.round(super().view(MatArray)).astype(int) - 1
 
-    def view(self, dtype=None, *args, **kwargs) -> MatArray:
-        if self.__slice_expr is not None:
-            start, stop, step = self.__convert_to_slice()
+    def view(self, *args, **kwargs) -> MatArray:
+        if self._slice_expr is not None:
+            start, stop, step = self._convert_to_slice()
 
             obj = np.arange(start, stop, step)
             super().resize(obj.size, refcheck=False)
             super().view(obj.__class__).__setitem__(slice(None, None), obj)
-            self.__slice_expr = None
+            self._slice_expr = None
 
-        return super().view(MatArray).view(dtype, *args, **kwargs)
+        if len(args) + len(kwargs) > 2:
+            raise ValueError("view() takes at most 2 arguments")
+        new_kwargs = dict(zip(("dtype", "type"), args))
+        if new_kwargs and "dtype" in kwargs:
+            raise TypeError(
+                "argument for view() given by name ('dtype') and position (position 0)"
+            )
+        new_kwargs.update(kwargs)
+
+        if "type" not in new_kwargs:
+            dtype = new_kwargs.get("dtype", MatArray)
+            if isinstance(dtype, object.__class__) and issubclass(dtype, np.ndarray):
+                return super().view(type=dtype)
+            else:
+                return super().view(dtype, MatArray)
+        return super().view(**new_kwargs)
 
     def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
         new_inputs = tuple(
             i.view(MatArray) if isinstance(i, Colon) else i for i in inputs
         )
-        new_out = tuple(i.view(MatArray) if isinstance(i, Colon) else i for i in out)
+        new_out = (
+            None
+            if out is None
+            else tuple(i.view(MatArray) if isinstance(i, Colon) else i for i in out)
+        )
         return self.view(MatArray).__array_ufunc__(
             ufunc, method, *new_inputs, out=new_out, **kwargs
         )

@@ -61,3 +61,29 @@ def test_colon_attr():
 
     seq = colon(1, 10)
     seq[:] = colon(2, 11)
+    assert np.allclose(seq, np.arange(2, 12))
+    assert seq.__class__.__name__ == "Colon"
+
+    seq += colon(2, 11)
+    assert np.allclose(seq, np.arange(2, 12) * 2)
+    assert seq.__class__.__name__ == "MatArray"
+
+
+@pytest.mark.parametrize(
+    ("args", "kwargs", "dtype", "expected_type"),
+    [
+        (tuple(), {}, int, "MatArray"),
+        ((np.ndarray,), {}, int, "ndarray"),
+        ((float,), {}, float, "MatArray"),
+        ((float,), {"type": np.ndarray}, float, "ndarray"),
+        ((None,), {}, None, "MatArray"),
+        (tuple(), {"type": np.ndarray, "dtype": None}, None, "ndarray"),
+    ],
+)
+def test_colon_view(args, kwargs, dtype, expected_type):
+    seq = colon(1, 10)
+    view = seq.view(*args, **kwargs)
+    value = np.arange(1, 11).view(dtype)
+
+    assert np.all(view == value)
+    assert view.__class__.__name__ == expected_type
