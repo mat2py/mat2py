@@ -84,10 +84,6 @@ class MatIndex:
             self.item = index
 
     @staticmethod
-    def __getitem__(item):
-        return MatIndex(item)
-
-    @staticmethod
     def __evaluate__(
         item: ("Colon", slice, End, "MatIndex", int, np.ndarray, "MatCreator"),
         length: int,
@@ -120,7 +116,12 @@ class MatIndex:
         raise ValueError("index exceed the Array dimention")
 
 
-I = MatIndex(None)
+class I(type):
+    """see https://www.python.org/dev/peps/pep-0560/#class-getitem"""
+
+    @staticmethod
+    def __class_getitem__(item):
+        return MatIndex(item)
 
 
 def ind2sub(shape: tuple, index: (typing.Iterable[int], int, slice)):
@@ -176,10 +177,6 @@ def _contains_end(item):
 
 
 class MatCreator(object):
-    @staticmethod
-    def __getitem__(args):
-        return MatCreator(args)
-
     @staticmethod
     def __evaluate__(args, item_map=lambda x: x):
         def non_empty(i):
@@ -244,7 +241,10 @@ class MatCreator(object):
         return self.__evaluate__(self.args, item_map)
 
 
-M = MatCreator(None)
+class M(type):
+    @staticmethod
+    def __class_getitem__(args):
+        return MatCreator(args)
 
 
 def array(*args, **kwargs):
@@ -428,7 +428,7 @@ class Colon(MatArray, metaclass=ColonMeta):
 
         if "type" not in new_kwargs:
             dtype = new_kwargs.get("dtype", MatArray)
-            if isinstance(dtype, object.__class__) and issubclass(dtype, np.ndarray):
+            if isinstance(dtype, type) and issubclass(dtype, np.ndarray):
                 return super().view(type=dtype)
             else:
                 return super().view(dtype, MatArray)
