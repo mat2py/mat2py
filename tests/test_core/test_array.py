@@ -8,11 +8,11 @@ from mat2py.core import I, M, colon, end
 
 
 def test_array():
-    d1 = mp.array(np.arange(12))
+    d1 = M[np.arange(12)]
 
-    assert d1.shape == (12,)
+    assert d1.shape == (1, 12)
     assert d1(1) == 0
-    assert d1[1] == 1
+    assert d1[0, 1] == 1
     assert d1(end) == 11
     assert d1[end - 1] == 10
     assert np.all(
@@ -24,7 +24,7 @@ def test_array():
     assert np.allclose(d1(I[2:end]), np.arange(1, 12))
     assert np.allclose(d1(colon(2, end)), np.arange(1, 12))
 
-    d2 = mp.array(np.copy(np.arange(12).reshape(4, 3).T))
+    d2 = M[np.copy(np.arange(12).reshape(4, 3).T)]
 
     assert d2.shape == (3, 4)
     assert np.allclose(d2(1), 0)
@@ -41,6 +41,7 @@ def test_array():
         d2[I[:, 2]], np.array([3, 4, 5])
     )  # TODO: do we need to take care of row/column vector?
 
+    assert M[1].shape == (1, 1)
     assert np.allclose(M[[]], np.array([]))
     assert np.allclose(M[1, 2], np.array([1, 2]).reshape(-1, 1))
     assert np.allclose(M[[1, 2]], np.array([1, 2]))

@@ -52,9 +52,9 @@ def test_colon_attr():
     seq = colon(1, 10)
 
     assert seq.to_index(10) == slice(0, 10, 1)
-    assert seq[1] == 2
+    assert seq[0, 1] == 2
     assert seq.size == 10
-    assert seq.shape == (10,)
+    assert seq.shape == (1, 10)
     assert seq.sum() == (1 + 10) * 10 / 2
     assert np.allclose(seq.to_index(10), np.arange(0, 10))
     assert np.allclose(list(iter(seq)), np.arange(1, 11))

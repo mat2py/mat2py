@@ -8,7 +8,7 @@ from itertools import chain
 
 import numpy as np
 
-__all__ = ["end", "I", "colon", "M", "array"]
+__all__ = ["end", "I", "colon", "M"]
 
 
 class End:
@@ -104,8 +104,18 @@ class MatIndex:
     def __call__(self, shape: Tuple[int]):
         item = self.item if isinstance(self.item, tuple) else (self.item,)
 
+        def convert_to_1d(i):
+            if isinstance(i, np.ndarray):
+                return i.reshape(
+                    -1
+                )  # TODO: we need to take care of the fortran/C order here
+            else:
+                return i
+
         if len(item) == len(shape):
-            return tuple(self.__evaluate__(i, l) for i, l in zip(item, shape))
+            return tuple(
+                convert_to_1d(self.__evaluate__(i, l)) for i, l in zip(item, shape)
+            )
         if len(item) == 1:  # line index
             return ind2sub(
                 shape, self.__evaluate__(item[0], reduce(operator.mul, shape))
@@ -128,7 +138,11 @@ def ind2sub(shape: tuple, index: (typing.Iterable[int], int, slice)):
     if len(shape) == 1:
         return index
     elif len(shape) == 2:
-        d1, _ = shape
+        d1, d2 = shape
+        if d2 == 1:
+            return index
+        if d1 == 1:
+            return slice(None, None), index
         index = (
             np.array(index).reshape(-1)
             if not isinstance(index, slice)
@@ -189,20 +203,33 @@ class MatCreator(object):
                 else ((item_map(r),) if non_empty(item_map(r)) else tuple())
             )
 
+        def vector2matrix(a):
+            return a.reshape(1, -1) if len(a.shape) == 1 else a
+
         rows = tuple(
-            np.hstack(
-                tuple(
-                    np.squeeze(i, axis=0)
-                    if isinstance(i, np.ndarray) and i.shape[0] == 1
-                    else i
-                    for i in r
-                )
+            map(
+                vector2matrix,
+                (
+                    np.hstack(
+                        tuple(
+                            np.squeeze(i, axis=0)
+                            if isinstance(i, np.ndarray) and i.shape[0] == 1
+                            else i
+                            for i in r
+                        )
+                    )
+                    for r in map(
+                        filter_row, (args if isinstance(args, tuple) else (args,))
+                    )
+                    if non_empty(r)
+                ),
             )
-            for r in map(filter_row, (args if isinstance(args, tuple) else (args,)))
-            if non_empty(r)
         )
         if non_empty(rows):
-            return np.vstack(rows).view(MatArray)
+            if len(rows) == 1:
+                return rows[0].view(MatArray)
+            else:
+                return np.vstack(rows).view(MatArray)
         else:
             return np.array([]).view(MatArray)
 
@@ -245,10 +272,6 @@ class M(type):
     @staticmethod
     def __class_getitem__(args):
         return MatCreator(args)
-
-
-def array(*args, **kwargs):
-    return np.array(*args, **kwargs).view(MatArray)
 
 
 class ColonMeta(type):
@@ -381,7 +404,8 @@ class Colon(MatArray, metaclass=ColonMeta):
             (
                 1
                 if has_end or np.issubdtype(self.dtype, np.integer)
-                else np.finfo(float).eps * 10.0
+                else np.finfo(float).eps * 100.0
+                # matlab seems to use tolerance between 10eps and 100 eps. checkout `all(0:(63.0-eps*16) == 0:63)`
             )
             if eps is None
             else eps
@@ -413,7 +437,7 @@ class Colon(MatArray, metaclass=ColonMeta):
             start, stop, step = self._convert_to_slice()
 
             obj = np.arange(start, stop, step)
-            super().resize(obj.size, refcheck=False)
+            super().resize((1, obj.size), refcheck=False)
             super().view(obj.__class__).__setitem__(slice(None, None), obj)
             self._slice_expr = None
 

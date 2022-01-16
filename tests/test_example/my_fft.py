@@ -1,27 +1,5 @@
 # type: ignore
-
-import mat2py.core as mp
-from mat2py.core import (
-    I,
-    M,
-    clc,
-    clear,
-    colon,
-    disp,
-    end,
-    error,
-    exp,
-    linspace,
-    mrdivide,
-    mtimes,
-    ndgrid,
-    numel,
-    pi,
-    randn,
-    rng,
-    sinc,
-    size,
-)
+from mat2py.core import *
 
 
 def my_fft(x):
@@ -77,7 +55,7 @@ def main():
     rng("default")
     t = colon(1, 10)
     x = randn(size(t)).T
-    ts = linspace(-5, 15, 2 ^ 9)
+    ts = linspace(-5, 15, 2 ** 9)
     Ts, T = ndgrid(ts, t)
     y = mtimes(sinc(Ts - T), x)
     f = my_fft(y)
