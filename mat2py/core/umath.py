@@ -50,8 +50,7 @@ def size(a):
 
 
 def rng(*args, **kwargs):
-    pass
-    # return np.random.default_rng(*args, **kwargs)
+    return np.random.seed(0)
 
 
 sinc, exp, linspace = (
@@ -61,13 +60,7 @@ sinc, exp, linspace = (
 
 @matlab_function_decorators()
 def mtimes(a, b):
-    a, b = (
-        (True, np.reshape(i, 1)[0]) if np.size(i) == 1 else (False, i) for i in (a, b)
-    )
-    if a[0] or b[0]:
-        return a[1] * b[1]
-    else:
-        return np.dot(a[1], b[1])
+    return M[a] @ b
 
 
 @matlab_function_decorators()

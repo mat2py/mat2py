@@ -105,10 +105,8 @@ class MatIndex:
         item = self.item if isinstance(self.item, tuple) else (self.item,)
 
         def convert_to_1d(i):
-            if isinstance(i, np.ndarray):
-                return i.reshape(
-                    -1
-                )  # TODO: we need to take care of the fortran/C order here
+            if isinstance(i, np.ndarray) and i.ndim > 1:
+                return i.reshape(-1, order="F")
             else:
                 return i
 
@@ -120,7 +118,7 @@ class MatIndex:
             return ind2sub(
                 shape, self.__evaluate__(item[0], reduce(operator.mul, shape))
             )
-        elif len(self.item) < len(shape):
+        elif len(item) < len(shape):
             raise NotImplementedError
 
         raise ValueError("index exceed the Array dimention")
@@ -179,6 +177,35 @@ class MatArray(np.ndarray):
 
         return super().__setitem__(key, value)
 
+    @property
+    def H(self):
+        if np.issubdtype(self.dtype, np.complexfloating):
+            return self.transpose().conjugate()
+        else:
+            return self.transpose()
+
+    def __rmatmul__(self, other):
+        if not isinstance(other, np.ndarray):
+            other = np.array(other).view(MatArray)
+        return other @ self
+
+    def __imatmul__(self, other):
+        self[:] = self @ other
+
+    def __matmul__(self, other):
+        if not isinstance(other, np.ndarray):
+            other = np.array(other)
+
+        a, b = (
+            (True, np.reshape(i, 1)[0]) if np.size(i) == 1 else (False, i)
+            for i in (self, other)
+        )
+
+        if a[0] or b[0]:
+            return a[1] * b[1]
+        else:
+            return np.dot(a[1].view(np.ndarray), b[1].view(np.ndarray)).view(MatArray)
+
 
 def _contains_end(item):
     if isinstance(item, (End, MatCreator)):
@@ -204,7 +231,7 @@ class MatCreator(object):
             )
 
         def vector2matrix(a):
-            return a.reshape(1, -1) if len(a.shape) == 1 else a
+            return a.reshape(1, -1) if a.ndim == 1 else a
 
         rows = tuple(
             map(
@@ -234,8 +261,11 @@ class MatCreator(object):
             return np.array([]).view(MatArray)
 
     def __new__(cls, args):
-        if args is None:
-            return super().__new__(cls)
+        if isinstance(args, np.ndarray):
+            if args.ndim < 2:
+                return args.reshape(1, -1).view(MatArray)
+            else:
+                return args.view(MatArray)
 
         contains_end = any(
             _contains_end(i)

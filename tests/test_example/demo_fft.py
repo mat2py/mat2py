@@ -1,4 +1,5 @@
 # type: ignore
+import mat2py as mp
 from mat2py.core import *
 
 
@@ -9,9 +10,7 @@ def my_fft(x):
     if N >= 8:
         Xp = my_fft(xp)
         Xpp = my_fft(xpp)
-        Wn = exp(
-            mrdivide(mtimes(mtimes((-1j) * 2, pi), (colon(0, ((N / 2) - 1))).T), N)
-        )
+        Wn = exp(mrdivide((((-1j) * 2) * pi) @ ((M[0 : ((N / 2) - 1)]).H), N))
         tmp = Wn * Xpp
         X = M[
             Xp + tmp,
@@ -19,48 +18,48 @@ def my_fft(x):
         ]
     else:
         if N == 2:
-            X = mtimes(
+            X = (
                 M[
                     [1, 1],
                     [1, -1],
-                ],
-                x,
-            )
+                ]
+            ) @ x
         elif N == 4:
-            X = mtimes(
-                mtimes(
+            X = (
+                (
                     M[
                         [1, 0, 1, 0],
                         [0, 1, 0, -1j],
                         [1, 0, -1, 0],
                         [0, 1, 0, 1j],
-                    ],
+                    ]
+                )
+                @ (
                     M[
                         [1, 0, 1, 0],
                         [1, 0, -1, 0],
                         [0, 1, 0, 1],
                         [0, 1, 0, -1],
-                    ],
-                ),
-                x,
-            )
+                    ]
+                )
+            ) @ M[x]
         else:
             error("N not correct.")
     return X
 
 
-def main():
+def demo_fft():
     clear
     clc
     rng("default")
-    t = colon(1, 10)
-    x = randn(size(t)).T
+    t = M[1:10]
+    x = randn(size(t)).H
     ts = linspace(-5, 15, 2 ** 9)
     Ts, T = ndgrid(ts, t)
-    y = mtimes(sinc(Ts - T), x)
+    y = sinc(Ts - T) @ M[x]
     f = my_fft(y)
     disp(M[[y, f]])
 
 
 if __name__ == "__main__":
-    main()
+    demo_fft()
