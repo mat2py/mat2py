@@ -98,15 +98,18 @@ class MatIndex:
             return item((length,))
         elif isinstance(item, MatCreator):
             return item.to_index(length)
-        else:
-            return item - 1
+
+        if not isinstance(item, np.ndarray):
+            item = np.array(item)
+        return item if np.issubdtype(item.dtype, bool) else item - 1
 
     def __call__(self, shape: Tuple[int]):
         item = self.item if isinstance(self.item, tuple) else (self.item,)
 
         def convert_to_1d(i):
             if isinstance(i, np.ndarray) and i.ndim > 1:
-                return i.reshape(-1, order="F")
+                order = "F" if max(i.shape) != i.size else "A"
+                return i.reshape(-1, order=order)
             else:
                 return i
 
@@ -114,21 +117,28 @@ class MatIndex:
             return tuple(
                 convert_to_1d(self.__evaluate__(i, l)) for i, l in zip(item, shape)
             )
-        if len(item) == 1:  # line index
-            return ind2sub(
-                shape, self.__evaluate__(item[0], reduce(operator.mul, shape))
-            )
+        if len(item) == 1:
+            item = self.__evaluate__(item[0], reduce(operator.mul, shape))
+            if isinstance(item, np.ndarray) and np.issubdtype(
+                item.dtype, bool
+            ):  # boolean index
+                if item.shape != shape:
+                    raise ValueError("boolean index must be used for the same shape")
+
+            return ind2sub(shape, convert_to_1d(item))  # line index
         elif len(item) < len(shape):
             raise NotImplementedError
 
-        raise ValueError("index exceed the Array dimention")
+        raise ValueError("index exceed the Array dimension")
 
 
 class I(type):
     """see https://www.python.org/dev/peps/pep-0560/#class-getitem"""
 
     @staticmethod
-    def __class_getitem__(item):
+    def __class_getitem__(item) -> MatIndex:
+        if isinstance(item, MatIndex):
+            return item
         return MatIndex(item)
 
 
@@ -141,11 +151,10 @@ def ind2sub(shape: tuple, index: (typing.Iterable[int], int, slice)):
             return index
         if d1 == 1:
             return slice(None, None), index
-        index = (
-            np.array(index).reshape(-1)
-            if not isinstance(index, slice)
-            else np.arange(index.start, index.stop, index.step)
-        )
+        if isinstance(index, slice):
+            index = np.arange(index.start, index.stop, index.step)
+        if isinstance(index, np.ndarray) and np.issubdtype(index.dtype, bool):
+            (index,) = index.nonzero()
         return index % d1, index // d1
     else:
         # TODO: take care of fortran order
@@ -160,7 +169,7 @@ class MatArray(np.ndarray):
         item = [item, *rest_item] if rest_item else item
         return super().__getitem__(MatIndex(item)(self.shape))
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> "MatArray":
         if isinstance(item, End):
             item = MatIndex(item)
         if isinstance(item, MatIndex):
@@ -176,6 +185,11 @@ class MatArray(np.ndarray):
             value = value.view(MatArray)
 
         return super().__setitem__(key, value)
+
+    def __iter__(self):
+        m = self.reshape(1, -1) if self.ndim < 2 else self
+        for i in range(m.shape[-1]):
+            yield m[..., [i]]
 
     @property
     def H(self):
@@ -300,7 +314,7 @@ class MatCreator(object):
 
 class M(type):
     @staticmethod
-    def __class_getitem__(args):
+    def __class_getitem__(args) -> Union[MatArray, MatCreator]:
         return MatCreator(args)
 
 

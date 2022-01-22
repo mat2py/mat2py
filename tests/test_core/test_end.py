@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from mat2py.core import colon, end
+from mat2py.core import *
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,10 @@ def test_colon_attr():
     assert seq.shape == (1, 10)
     assert seq.sum() == (1 + 10) * 10 / 2
     assert np.allclose(seq.to_index(10), np.arange(0, 10))
-    assert np.allclose(list(iter(seq)), np.arange(1, 11))
+    assert np.allclose(np.array(list(iter(seq))).reshape(-1), np.arange(1, 11))
+    assert next(iter(seq)) == 1
+    assert seq[I[seq > 5]].shape == (1, 5)
+    assert np.allclose(seq[seq > 5], np.arange(6, 11))
 
     seq = colon(1, 10)
     seq[:] = colon(2, 11)
