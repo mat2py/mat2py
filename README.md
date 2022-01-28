@@ -33,7 +33,7 @@ poetry add mat2py
 
 ### Install fork of `miss_hit` for `mh_python` if needed
 ```bash
-git clone https://github.com/chaoqing/miss_hit
+git clone https://github.com/mat2py/miss_hit
 cd miss_hit
 python3 setup_gpl.py install --user
 python3 setup_agpl.py install --user
@@ -48,10 +48,10 @@ rm -rf miss_hit
 wget https://raw.githubusercontent.com/mat2py/mat2py/main/tests/test_example/demo_fft.py
 
 # or convert it yourself
-echo "wget https://raw.githubusercontent.com/chaoqing/miss_hit/matlab2numpy/tests/mat2np/demo_fft.m"
+echo "wget https://raw.githubusercontent.com/mat2py/miss_hit/matlab2numpy/tests/mat2np/demo_fft.m"
 echo "mh_python --python-alongside --format demo_fft.m"
 
-# run it...
+# run it...g
 python3 demo_fft.py
 ```
 
@@ -84,6 +84,14 @@ make pre-commit-install
 ```bash
 make lint
 ```
+
+## ToDO
+
+- A serverless web service for run `.m`/`.py` code inside browser
+- Complete set of [MATLAB® Basic Functions](https://www.mathworks.com/content/dam/mathworks/fact-sheet/matlab-basic-functions-reference.pdf)
+- Copy-on-Write beheviour
+- A cleaner class hierarchy
+- Enable `lint`(mypy, UT, etc.)
 
 ## 📈 Releases
 

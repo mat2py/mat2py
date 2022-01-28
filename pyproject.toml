@@ -11,7 +11,7 @@ readme = "README.md"
 authors = ["mat2py <chaoqingwang.nick@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/mat2py/mat2py"
-homepage = "https://github.com/mat2py/mat2py"
+homepage = "https://mat2py.org"
 
 # Keywords description https://python-poetry.org/docs/pyproject/#keywords
 keywords = []  #! Update me
