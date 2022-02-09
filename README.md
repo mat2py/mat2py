@@ -22,7 +22,7 @@ mat2py mean to be drop-in replacement of Matlab by wrapping Numpy/Scipy/... pack
 ### Installation
 
 ```bash
-pip install -U mat2py
+python3 -m pip install -U mat2py
 ```
 
 or install with `Poetry`
@@ -31,14 +31,9 @@ or install with `Poetry`
 poetry add mat2py
 ```
 
-### Install fork of `miss_hit` for `mh_python` if needed
+### Install the translator `mh_python` if needed
 ```bash
-git clone https://github.com/mat2py/miss_hit
-cd miss_hit
-python3 setup_gpl.py install --user
-python3 setup_agpl.py install --user
-cd -
-rm -rf miss_hit
+python3 -m pip install -U mh-python
 ```
 
 ### Try the example `demo_fft`
@@ -51,9 +46,11 @@ wget https://raw.githubusercontent.com/mat2py/mat2py/main/tests/test_example/dem
 echo "wget https://raw.githubusercontent.com/mat2py/miss_hit/matlab2numpy/tests/mat2np/demo_fft.m"
 echo "mh_python --python-alongside --format demo_fft.m"
 
-# run it...g
+# run it...
 python3 demo_fft.py
 ```
+
+You can also **try out** the [online translator](https://translate.mat2py.org/) by modifiy the example or put your own code.
 
 ## For Developer
 
