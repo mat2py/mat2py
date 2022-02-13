@@ -73,6 +73,16 @@ class End:
 end = End()
 
 
+def _convert_scalar(x):
+    if isinstance(x, np.ndarray):
+        assert x.size == 1
+        return x.reshape(-1)[0]
+    elif isinstance(x, MatCreator):
+        raise NotImplementedError
+    else:
+        return x
+
+
 class MatIndex:
     def __new__(cls, index):
         return index if isinstance(index, MatIndex) else super().__new__(cls)
@@ -384,10 +394,13 @@ class Colon(MatArray, metaclass=ColonMeta):
         cls, start: (float, End), stop: (float, End), step: (float, End) = None
     ):
         assert start is not None and stop is not None
-        slice_expr = (  # in (start, stop, step) order
-            start,
-            stop,
-            1 if step is None else step,
+        slice_expr = tuple(
+            _convert_scalar(s)
+            for s in (  # in (start, stop, step) order
+                start,
+                stop,
+                1 if step is None else step,
+            )
         )
         has_end = any(isinstance(expr, End) for expr in slice_expr)
 
@@ -442,33 +455,35 @@ class Colon(MatArray, metaclass=ColonMeta):
                 for expr in self._slice_expr
             )
 
-        stop += (
-            (
+        if eps is None:
+            eps = (
                 1
                 if has_end or np.issubdtype(self.dtype, np.integer)
                 else np.finfo(float).eps * 100.0
                 # matlab seems to use tolerance between 10eps and 100 eps. checkout `all(0:(63.0-eps*16) == 0:63)`
             )
-            if eps is None
-            else eps
-        )
 
-        return start, stop, step
+        return start, stop + eps * np.sign(step).astype(int), step
 
     def to_index(self, length=None) -> slice:
         if self._slice_expr is not None:
             start, stop, step = map(round, self._convert_to_slice(length=length, eps=1))
             start -= 1
             stop -= 1
-            # TODO: validation on [1, length]
+
+            # TODO: correct validation on [1, length]
             if stop > length:
                 raise ValueError(f"out of the dimension")
             if start < 0:
                 raise ValueError(f"index must be positive integer")
 
+            stop = max(stop, start) if step > 0 else min(stop, start)
+            if stop == -1:
+                stop = None
+
             return slice(
                 start,
-                max(stop, start) if step > 0 else min(stop, start),
+                stop,
                 step,
             )
         else:

@@ -10,12 +10,17 @@ from mat2py.core import *
     ("args", "expected"),
     [
         ((1, 10), slice(0, 10, 1)),
+        ((1, M[10]), slice(0, 10, 1)),
         ((1, end), slice(0, 10, 1)),
+        # ((1, M[end]), slice(0, 10, 1)),  # ToDo: to be implemented
         ((1, 2, 10), slice(0, 10, 2)),
+        ((10, -2, 1), slice(9, None, -2)),
         ((end, end / 2, end), slice(9, 10, 5)),
         ((2, end / 2.6, end - 20), slice(1, 1, 4)),
         ((1, 10), np.arange(1, 11)),
         ((1, 0.5, 10), np.arange(1, 10.1, 0.5)),
+        ((10, -0.5, 1), np.arange(10, 0.9, -0.5)),
+        ((1, M[10]), np.arange(1, 11)),
     ],
 )
 def test_colon(args, expected):
