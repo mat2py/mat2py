@@ -6,9 +6,7 @@ import operator
 from functools import reduce
 from itertools import chain
 
-import numpy as np
-
-__all__ = ["end", "I", "colon", "M"]
+from .package_proxy import numpy as np
 
 
 class End:
