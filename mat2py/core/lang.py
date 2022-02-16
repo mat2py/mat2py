@@ -1,6 +1,6 @@
 # type: ignore
 from ._internal.array import I, M, end
-from ._internal.helper import matlab_function_decorators, special_variables
+from ._internal.helper import argout_wrapper_decorators, special_variables
 from ._internal.package_proxy import numpy as np
 
 

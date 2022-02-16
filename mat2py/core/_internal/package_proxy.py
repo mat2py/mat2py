@@ -2,3 +2,4 @@
 
 import numpy as numpy
 import scipy as scipy
+from scipy import linalg as linalg

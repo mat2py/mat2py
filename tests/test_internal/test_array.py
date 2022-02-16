@@ -41,6 +41,9 @@ def test_array():
 
     assert np.allclose(d2[I[2, :]], np.array([[1, 4, 7, 10]]))
     assert np.allclose(d2[I[2:3, M[2:3]]], np.array([[4, 7], [5, 8]]))
+    assert np.allclose(d2[I[M[[2, 3]], M[[2, 3]]]], np.array([[4, 7], [5, 8]]))
+    assert np.allclose(d2[I[M[[2, 3]]]], np.array([1, 2]))
+    assert np.allclose(d2[I[M[2, 3]]], np.array([1, 2]))
     assert np.allclose(d2[I[:, 2]], np.array([3, 4, 5]))
     assert np.allclose(d2[I[:, d2.sum(0) > 20]], np.array([[6, 9], [7, 10], [8, 11]]))
     assert np.allclose(d2[I[d2 > 7]], np.array([8, 9, 10, 11]))

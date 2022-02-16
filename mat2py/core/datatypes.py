@@ -1,6 +1,7 @@
 # type: ignore
 from ._internal.array import M
-from ._internal.helper import matlab_function_decorators
+from ._internal.cell import C, cell
+from ._internal.helper import argout_wrapper_decorators
 from ._internal.package_proxy import numpy as np
 
 
@@ -258,10 +259,6 @@ def mat2cell(*args):
 
 def func2str(*args):
     raise NotImplementedError("func2str")
-
-
-def cell(*args):
-    raise NotImplementedError("cell")
 
 
 def methodsview(*args):

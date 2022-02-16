@@ -1,18 +1,23 @@
 # type: ignore
 from ._internal.array import M
-from ._internal.helper import matlab_function_decorators
+from ._internal.helper import argout_wrapper_decorators
 from ._internal.package_proxy import numpy as np
 
-# sinc belongs to the signal package but for now lets put it here
-(sinc, exp, real, imag, angle, conj) = (
-    matlab_function_decorators()(f)
+(exp, real, imag, abs, angle, conj, sin, cos, sinh, cosh, tan, tanh,) = (
+    argout_wrapper_decorators()(f)
     for f in (
-        np.sinc,
         np.exp,
         np.real,
         np.imag,
+        np.abs,
         np.angle,
         np.conj,
+        np.sin,
+        np.cos,
+        np.sinh,
+        np.cosh,
+        np.tan,
+        np.tanh,
     )
 )
 
@@ -45,10 +50,6 @@ def acsc(*args):
     raise NotImplementedError("acsc")
 
 
-def imag(*args):
-    raise NotImplementedError("imag")
-
-
 def log10(*args):
     raise NotImplementedError("log10")
 
@@ -65,20 +66,8 @@ def acotd(*args):
     raise NotImplementedError("acotd")
 
 
-def sinh(*args):
-    raise NotImplementedError("sinh")
-
-
-def sin(*args):
-    raise NotImplementedError("sin")
-
-
 def mod(*args):
     raise NotImplementedError("mod")
-
-
-def cos(*args):
-    raise NotImplementedError("cos")
 
 
 def acosh(*args):
@@ -109,8 +98,11 @@ def complex(*args):
     raise NotImplementedError("complex")
 
 
-def floor(*args):
-    raise NotImplementedError("floor")
+def floor(x, *args):
+    if args:
+        raise NotImplementedError("floor")
+    else:
+        return M[np.floor(x)]
 
 
 def nthroot(*args):
@@ -241,40 +233,23 @@ def sind(*args):
     raise NotImplementedError("sind")
 
 
-def tanh(*args):
-    raise NotImplementedError("tanh")
-
-
 def csc(*args):
     raise NotImplementedError("csc")
 
 
-def cosh(*args):
-    raise NotImplementedError("cosh")
-
-
-def abs(*args):
-    raise NotImplementedError("abs")
-
-
-def ceil(*args):
-    raise NotImplementedError("ceil")
+def ceil(x, unit=None):
+    if unit is not None:
+        raise NotImplementedError("ceil")
+    else:
+        return M[np.ceil(x)]
 
 
 def acot(*args):
     raise NotImplementedError("acot")
 
 
-def real(*args):
-    raise NotImplementedError("real")
-
-
 def nextpow2(*args):
     raise NotImplementedError("nextpow2")
-
-
-def tan(*args):
-    raise NotImplementedError("tan")
 
 
 def realpow(*args):

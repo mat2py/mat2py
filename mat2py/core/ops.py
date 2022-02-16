@@ -1,6 +1,6 @@
 # type: ignore
 from ._internal.array import M, colon
-from ._internal.helper import matlab_function_decorators
+from ._internal.helper import argout_wrapper_decorators
 from ._internal.package_proxy import numpy as np
 
 
@@ -12,7 +12,7 @@ def horzcat(*args):
     raise M[list(args)]
 
 
-@matlab_function_decorators()
+@argout_wrapper_decorators()
 def mrdivide(b, a):
     r"""xA = B => x = B/A = (A'\B')'"""
     a, b = (
@@ -40,7 +40,7 @@ def gt(*args):
     raise NotImplementedError("gt")
 
 
-@matlab_function_decorators()
+@argout_wrapper_decorators()
 def mtimes(a, b):
     return M[a] @ b
 
@@ -65,12 +65,16 @@ def bitcmp(*args):
     raise NotImplementedError("bitcmp")
 
 
-def kron(*args):
-    raise NotImplementedError("kron")
+kron = argout_wrapper_decorators()(np.kron)
 
 
-def unique(*args):
-    raise NotImplementedError("unique")
+def unique(x, *args, nargout=3):
+    if nargout != 3 or args:
+        raise NotImplementedError("unique")
+    C, ia, ic = np.unique(
+        x.reshape(-1, order="F"), return_index=True, return_inverse=True
+    )
+    return M[C.reshape(-1, 1)], M[ia.reshape(-1, 1) + 1], M[ic.reshape(-1, 1) + 1]
 
 
 def mpower(*args):
@@ -109,7 +113,7 @@ def xor(*args):
     raise NotImplementedError("xor")
 
 
-@matlab_function_decorators()
+@argout_wrapper_decorators()
 def mldivide(a, b):
     r"""Ax = B => x = A\B"""
     a, b = (

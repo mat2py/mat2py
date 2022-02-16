@@ -1,14 +1,56 @@
 # type: ignore
-from ._internal.array import M, ind2sub
-from ._internal.helper import matlab_function_decorators, special_variables
+import functools
+
+from ._internal.array import M, _convert_round, _convert_scalar, ind2sub
+from ._internal.helper import argout_wrapper_decorators, special_variables
+from ._internal.package_proxy import linalg as _linalg
 from ._internal.package_proxy import numpy as np
+
+
+@functools.lru_cache(maxsize=10)
+def _zeros_like_decorators():
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args):
+            args = tuple(_convert_scalar(i) for i in args)
+            dtype = np.float_
+            shape = args
+            if len(args) >= 2 and args[-2] == "like":
+                dtype = M[args[-1]].dtype
+                shape = args[:-2]
+            elif isinstance(args[-1], str):
+                classname = args[-1]
+                dtype = {
+                    "double": np.float64,
+                    "single": np.float32,
+                }.get(classname, getattr(np, classname))
+                shape = args[:-1]
+
+            if len(shape) == 0:
+                shape = (1, 1)
+            elif len(shape) == 1 and isinstance(shape[0], np.ndarray):
+                shape = shape[0].reshape(-1).tolist()
+            elif len(shape) == 1:
+                shape = (shape[0], shape[0])
+
+            return func(tuple(_convert_round(s) for s in shape), dtype=dtype)
+
+        return wrapper
+
+    return decorator
 
 
 def realmin(*args):
     raise NotImplementedError("realmin")
 
 
-def reshape(*args):
+def reshape(x, *args):
+    if len(args) == 1 and isinstance(args[0], np.ndarray) and np.size(args[0]) > 0:
+        return x.reshape(tuple(i for i in args[0]), order="F")
+    else:
+        shape = tuple(-1 if np.size(i) == 0 else i for i in args)
+        return x.reshape(shape, order="F")
+
     raise NotImplementedError("reshape")
 
 
@@ -32,8 +74,7 @@ def gallery(*args):
     raise NotImplementedError("gallery")
 
 
-def eye(*args):
-    raise NotImplementedError("eye")
+eye = _zeros_like_decorators()(np.eye)
 
 
 i = special_variables(1j)
@@ -47,8 +88,8 @@ def flipud(*args):
     raise NotImplementedError("flipud")
 
 
-def length(*args):
-    raise NotImplementedError("length")
+def length(x):
+    return np.max(np.size(x))
 
 
 def fliplr(*args):
@@ -75,8 +116,17 @@ def hadamard(*args):
     raise NotImplementedError("hadamard")
 
 
-def diag(*args):
-    raise NotImplementedError("diag")
+def diag(x, *args):
+    if args:
+        raise NotImplementedError("diag")
+    else:
+        if np.ndim(x) > 2:
+            raise ValueError("First input must be 2-D.")
+
+        if np.max(np.shape(x)) == np.size(x):
+            return M[np.diag(x.reshape(-1))]
+        else:
+            return M[np.diag(x).reshape(-1, 1)]
 
 
 def vander(*args):
@@ -193,8 +243,7 @@ def flip(*args):
     raise NotImplementedError("flip")
 
 
-def zeros(*args):
-    raise NotImplementedError("zeros")
+zeros = _zeros_like_decorators()(np.zeros)
 
 
 def shiftdim(*args):
@@ -237,15 +286,21 @@ def blkdiag(*args):
     raise NotImplementedError("blkdiag")
 
 
-def ones(*args):
-    raise NotImplementedError("ones")
+ones = _zeros_like_decorators()(np.ones)
 
 
 inf = special_variables(np.inf)
 Inf = inf
 
 
-def find(*args):
+def find(x, *args):
+    if len(args) == 0:
+        ind = np.where(x)
+        if x.ndim < 2:
+            return ind[0].reshape((1, -1) if x.shape[0] == 1 else (-1, 1)) + 1
+        else:
+            return np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)
+
     raise NotImplementedError("find")
 
 
@@ -265,7 +320,7 @@ def isequalwithequalnans(*args):
     raise NotImplementedError("isequalwithequalnans")
 
 
-@matlab_function_decorators()
+@argout_wrapper_decorators()
 def linspace(*args):
     return np.linspace(*args)
 
@@ -286,5 +341,4 @@ def isequal(*args):
     raise NotImplementedError("isequal")
 
 
-def toeplitz(*args):
-    raise NotImplementedError("toeplitz")
+toeplitz = argout_wrapper_decorators()(_linalg.toeplitz)

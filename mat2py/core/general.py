@@ -1,7 +1,12 @@
 # type: ignore
-from ._internal.array import M
-from ._internal.helper import matlab_function_decorators
+from types import SimpleNamespace as _SimpleNamespace
+
+import scipy.io
+
+from ._internal.array import M, _convert_scalar
+from ._internal.helper import argout_wrapper_decorators
 from ._internal.package_proxy import numpy as np
+from .datatypes import cell
 
 
 def setmcruserdata(*args):
@@ -324,8 +329,43 @@ def namelengthmax(*args):
     raise NotImplementedError("namelengthmax")
 
 
-def load(*args):
-    raise NotImplementedError("load")
+def load(path, *args):
+    # somehow loadmat can not process complex value with option `matlab_compatible`
+    def convert(obj):
+        if isinstance(obj, np.ndarray):
+            new_dtype = obj.dtype
+            if obj.dtype == object:
+                d = cell(obj.shape)
+                _data = d.reshape(-1)
+                for i, o in zip(range(obj.size), obj.reshape(-1)):
+                    _data[i] = convert(o)
+                return d
+
+            if np.issubdtype(obj.dtype, np.integer):
+                new_dtype = np.int_
+            elif np.issubdtype(obj.dtype, np.floating):
+                new_dtype = np.float_
+            elif np.issubdtype(obj.dtype, np.complexfloating):
+                new_dtype = np.complex_
+            if new_dtype.itemsize > obj.dtype.itemsize:
+                return _convert_scalar(M[obj.astype(new_dtype)])
+            else:
+                return _convert_scalar(M[obj])
+        else:
+            return obj
+
+    data = scipy.io.loadmat(
+        path,
+        squeeze_me=False,
+        struct_as_record=True,
+        mat_dtype=False,
+        chars_as_strings=True,
+        variable_names=args if args else None,
+    )
+
+    return _SimpleNamespace(
+        **{k: convert(v) for k, v in data.items() if not k.startswith("_")}
+    )
 
 
 def logo(*args):

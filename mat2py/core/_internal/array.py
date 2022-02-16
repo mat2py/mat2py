@@ -4,7 +4,7 @@ from typing import Callable, Tuple, Union
 
 import operator
 from functools import reduce
-from itertools import chain
+from itertools import chain, zip_longest
 
 from .package_proxy import numpy as np
 
@@ -74,13 +74,22 @@ end = End()
 
 
 def _convert_scalar(x):
-    if isinstance(x, np.ndarray):
-        assert x.size == 1
+    if isinstance(x, np.ndarray) and x.size == 1:
         return x.reshape(-1)[0]
     elif isinstance(x, MatCreator):
         raise NotImplementedError
     else:
         return x
+
+
+def _convert_round(x):
+    if isinstance(x, np.ndarray) and np.issubdtype(x.dtype, np.integer):
+        return x
+    else:
+        x_ = np.round(x)
+        if not np.all(np.isclose(x, x_)):
+            raise ValueError("Can not round to integer")
+        return x_.astype(int)
 
 
 class MatIndex:
@@ -109,7 +118,7 @@ class MatIndex:
 
         if not isinstance(item, np.ndarray):
             item = np.array(item)
-        return item if np.issubdtype(item.dtype, bool) else item - 1
+        return item if np.issubdtype(item.dtype, bool) else _convert_round(item - 1)
 
     def __call__(self, shape: Tuple[int]):
         item = self.item if isinstance(self.item, tuple) else (self.item,)
@@ -122,9 +131,12 @@ class MatIndex:
                 return i
 
         if len(item) == len(shape):
-            return tuple(
+            item = tuple(
                 convert_to_1d(self.__evaluate__(i, l)) for i, l in zip(item, shape)
             )
+            if len(item) == 2 and all(isinstance(i, np.ndarray) for i in item):
+                item = np.ix_(*item)
+            return item
         if len(item) == 1:
             item = self.__evaluate__(item[0], reduce(operator.mul, shape))
             if isinstance(item, np.ndarray) and np.issubdtype(
@@ -169,12 +181,59 @@ def ind2sub(shape: tuple, index: (typing.Iterable[int], int, slice)):
         raise NotImplementedError
 
 
+def _estimate_size(shape_or_array, item):
+    if isinstance(shape_or_array, np.ndarray):
+        return shape_or_array[item].shape
+
+    raise NotImplementedError("following logic is not complete")
+
+    item = item if isinstance(item, tuple) else (item,)
+    shape = shape_or_array
+    assert isinstance(shape, tuple)
+    if (
+        len(item) == len(shape)
+        and all(isinstance(i, np.ndarray) for i in item)
+        and item[0].shape == item[1].shape
+    ):
+        # must be generated with line index
+        return (item[0].size,)
+
+    def calc_length(i, s: int):
+        if i is None:
+            return s
+        if isinstance(i, slice):
+            return len(
+                range(
+                    i.start if i.start is not None else 0,
+                    i.stop if i.stop is not None else s,
+                    i.step if i.step is not None else 1,
+                )
+            )
+        if isinstance(i, np.ndarray) and np.issubdtype(i.dtype, bool):
+            return i.sum()
+        if isinstance(i, np.ndarray):
+            assert i.size == np.max(i.shape)
+            return i.size
+        if isinstance(i, int):
+            return 1
+        raise NotImplementedError
+
+    return tuple(calc_length(i, s) for i, s in zip_longest(item, shape, fillvalue=1))
+
+
+def _convert_to_2d(vec, shape):
+    if np.size(vec) != np.max(np.shape(vec)):
+        return vec
+    else:
+        return vec.reshape(shape)
+
+
 class MatArray(np.ndarray):
     """https://numpy.org/doc/stable/user/basics.subclassing.html"""
 
     def __call__(self, item, *rest_item):
         # TODO: we can not differicate `a(1)` and `a(1,)` while `a[1]` and `a[1,]` have difference
-        item = [item, *rest_item] if rest_item else item
+        item = (item, *rest_item) if rest_item else item
         return super().__getitem__(MatIndex(item)(self.shape))
 
     def __getitem__(self, item) -> "MatArray":
@@ -192,7 +251,11 @@ class MatArray(np.ndarray):
         if isinstance(value, Colon):
             value = value.view(MatArray)
 
-        return super().__setitem__(key, value)
+        target_shape = _estimate_size(self, key)
+        if np.prod(target_shape) == 0:
+            return self
+
+        return super().__setitem__(key, _convert_to_2d(value, target_shape))
 
     def __iter__(self):
         m = self.reshape(1, -1) if self.ndim < 2 else self
@@ -283,6 +346,8 @@ class MatCreator(object):
             return np.array([]).view(MatArray)
 
     def __new__(cls, args):
+        if isinstance(args, End):
+            return args
         if isinstance(args, np.ndarray):
             if args.ndim < 2:
                 return args.reshape(1, -1).view(MatArray)
@@ -441,7 +506,7 @@ class Colon(MatArray, metaclass=ColonMeta):
             return self.view(MatArray).__sub__(i)
 
     def _convert_to_slice(self, length=None, eps=None) -> tuple:
-        start, stop, step = self._slice_expr
+        _slice_expr = self._slice_expr
         has_end = self.__contains_end__()
 
         if length is None and has_end:
@@ -450,10 +515,12 @@ class Colon(MatArray, metaclass=ColonMeta):
             )
 
         elif has_end:
-            start, stop, step = (
+            _slice_expr = (
                 expr(length) if isinstance(expr, End) else expr
                 for expr in self._slice_expr
             )
+
+        start, stop, step = map(_convert_scalar, _slice_expr)
 
         if eps is None:
             eps = (
@@ -467,6 +534,7 @@ class Colon(MatArray, metaclass=ColonMeta):
 
     def to_index(self, length=None) -> slice:
         if self._slice_expr is not None:
+            # we use round instead of _convert_round because Matlab allow this but emit a warning
             start, stop, step = map(round, self._convert_to_slice(length=length, eps=1))
             start -= 1
             stop -= 1

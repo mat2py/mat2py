@@ -1,11 +1,15 @@
 # type: ignore
 from ._internal.array import M
-from ._internal.helper import matlab_function_decorators
+from ._internal.helper import argout_wrapper_decorators
+from ._internal.package_proxy import linalg as _linalg
 from ._internal.package_proxy import numpy as np
 
 
-def eig(*args):
-    raise NotImplementedError("eig")
+def eig(x, *args, nargout=2):
+    if nargout != 2 or args:
+        raise NotImplementedError("eig")
+    D, V = _linalg.eig(x)
+    return M[V], M[np.diag(D.reshape(-1))]
 
 
 def normest(*args):
@@ -108,8 +112,7 @@ def qrupdate(*args):
     raise NotImplementedError("qrupdate")
 
 
-def inv(*args):
-    raise NotImplementedError("inv")
+inv = argout_wrapper_decorators()(np.linalg.inv)
 
 
 def det(*args):

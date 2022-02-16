@@ -22,7 +22,7 @@ updates:
       - dependency-type: "all"
     commit-message:
       prefix: ":arrow_up:"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
 
   - package-ecosystem: "docker"
     directory: "/docker"

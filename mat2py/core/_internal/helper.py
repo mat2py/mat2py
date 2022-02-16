@@ -5,7 +5,7 @@ from .array import M
 
 
 @functools.lru_cache(maxsize=10)
-def matlab_function_decorators(nargout: int = 1):
+def argout_wrapper_decorators(nargout: int = 1):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -13,7 +13,8 @@ def matlab_function_decorators(nargout: int = 1):
             if nargout == 1:
                 return M[obj]
             else:
-                raise NotImplementedError
+                assert isinstance(obj, tuple)
+                return tuple(M[o] for o in obj)
 
         return wrapper
 

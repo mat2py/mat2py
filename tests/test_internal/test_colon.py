@@ -12,7 +12,7 @@ from mat2py.core import *
         ((1, 10), slice(0, 10, 1)),
         ((1, M[10]), slice(0, 10, 1)),
         ((1, end), slice(0, 10, 1)),
-        # ((1, M[end]), slice(0, 10, 1)),  # ToDo: to be implemented
+        ((1, M[end]), slice(0, 10, 1)),
         ((1, 2, 10), slice(0, 10, 2)),
         ((10, -2, 1), slice(9, None, -2)),
         ((end, end / 2, end), slice(9, 10, 5)),
@@ -46,7 +46,7 @@ def test_colon_attr():
     assert np.allclose(seq[seq > 5], np.arange(6, 11))
 
     seq = colon(1, 10)
-    seq[:] = colon(2, 11)
+    seq[I[:]] = colon(2, 11)
     assert np.allclose(seq, np.arange(2, 12))
     assert seq.__class__.__name__ == "Colon"
 

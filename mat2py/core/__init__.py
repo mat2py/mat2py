@@ -43,8 +43,9 @@ from .winfun import *
 
 # ToDo: Remove imported modules from __all__
 # - np
-# - matlab_function_decorators
+# - argout_wrapper_decorators
 # - special_variables
+
 
 # ToDo: Add hidden functions to __all__
 # - _all

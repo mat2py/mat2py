@@ -3,6 +3,15 @@ import mat2py as mp
 from mat2py.core import *
 
 
+# sinc belongs to the signal package
+def sinc(x):
+    i = find(x == 0)
+    x[I[i]] = 1
+    y = sin(pi @ M[x]) / (pi @ M[x])
+    y[I[i]] = 1
+    return y
+
+
 def my_fft(x):
     N = numel(x)
     xp = x[I[1:2:end]]

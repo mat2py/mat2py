@@ -1,7 +1,36 @@
 # type: ignore
-from ._internal.array import M
-from ._internal.helper import matlab_function_decorators
+import functools
+
+from ._internal.array import M, _convert_round, _convert_scalar
+from ._internal.helper import argout_wrapper_decorators
 from ._internal.package_proxy import numpy as np
+
+
+@functools.lru_cache(maxsize=10)
+def _sum_like_decorators():
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(x, *args):
+            if args and isinstance(args[-1], str):
+                raise NotImplementedError
+            dim = (
+                _convert_scalar(args[0]) - 1 if args else np.argmax(M[np.shape(x)] > 1)
+            )
+            res = func(x, _convert_round(dim), keepdims=True)
+            r = np.argmax(np.array(np.shape(res))[::-1] > 1)
+            if r > 0 and np.ndim(x) - r > 1:
+                res = res.reshape(res.shape[:-r])
+            return M[res]
+
+        return wrapper
+
+    return decorator
+
+
+(sum, max, min, prod, mean, median,) = (
+    _sum_like_decorators()(f)
+    for f in (np.sum, np.max, np.min, np.prod, np.mean, np.median)
+)
 
 
 def mode(*args):
@@ -24,20 +53,8 @@ def diff(*args):
     raise NotImplementedError("diff")
 
 
-def sum(*args):
-    raise NotImplementedError("sum")
-
-
-def max(*args):
-    raise NotImplementedError("max")
-
-
 def cumtrapz(*args):
     raise NotImplementedError("cumtrapz")
-
-
-def mean(*args):
-    raise NotImplementedError("mean")
 
 
 def ifft2(*args):
@@ -46,10 +63,6 @@ def ifft2(*args):
 
 def filter2(*args):
     raise NotImplementedError("filter2")
-
-
-def median(*args):
-    raise NotImplementedError("median")
 
 
 def cummax(*args):
@@ -64,8 +77,12 @@ def fft2(*args):
     raise NotImplementedError("fft2")
 
 
-def sort(*args):
-    raise NotImplementedError("sort")
+def sort(a, *args):
+    if args:
+        raise NotImplementedError("sort")
+    else:
+        axis = -1 if np.size(a) == np.max(np.shape(a)) else 0
+        return M[np.sort(a, axis)]
 
 
 def histcounts2(*args):
@@ -94,10 +111,6 @@ def filter(*args):
 
 def cov(*args):
     raise NotImplementedError("cov")
-
-
-def min(*args):
-    raise NotImplementedError("min")
 
 
 def corrcoef(*args):
@@ -162,10 +175,6 @@ def histcounts(*args):
 
 def fftn(*args):
     raise NotImplementedError("fftn")
-
-
-def prod(*args):
-    raise NotImplementedError("prod")
 
 
 def ifft(*args):
