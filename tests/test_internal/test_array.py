@@ -1,10 +1,10 @@
 # type: ignore
 """Tests for `MatArray`"""
-import numpy as np
 import pytest
 
 import mat2py.core as mp
-from mat2py.core import I, M, colon, end
+from mat2py.common.backends import numpy as np
+from mat2py.core import *
 
 
 def test_array():
@@ -58,3 +58,12 @@ def test_array():
     assert np.allclose(
         M[M[1:2:12], M[3:2:14]], np.vstack((np.arange(1, 13, 2), np.arange(3, 15, 2)))
     )
+
+
+def test_array_error():
+    with pytest.raises(TypeError):
+        x = ones(2)
+        x[I[1, 1]] = 1.0j
+
+    x = ones(2, "like", 1.0j)
+    x[I[1, 1]] = 1.0j

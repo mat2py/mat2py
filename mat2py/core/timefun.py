@@ -1,7 +1,10 @@
 # type: ignore
+from time import time as _time
+
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import M
 from ._internal.helper import argout_wrapper_decorators
-from ._internal.package_proxy import numpy as np
 
 
 def timezones(*args):
@@ -40,8 +43,18 @@ def eomday(*args):
     raise NotImplementedError("eomday")
 
 
-def tic(*args):
-    raise NotImplementedError("tic")
+def tic(nargout=0):
+    if nargout != 0:
+        raise NotImplementedError("tic")
+    tic.timerVal = _time()
+    return tic.timerVal
+
+
+def toc(*args, nargout=1):
+    interval = _time() - (args[0] if args else tic.timerVal)
+    if nargout == 0:
+        print(f"Elapsed time is {interval:10.5g} seconds.")
+    return interval
 
 
 def days(*args):
@@ -126,10 +139,6 @@ def pause(*args):
 
 def calendar(*args):
     raise NotImplementedError("calendar")
-
-
-def toc(*args):
-    raise NotImplementedError("toc")
 
 
 def years(*args):

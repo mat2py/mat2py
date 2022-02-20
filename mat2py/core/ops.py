@@ -1,7 +1,8 @@
 # type: ignore
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import M, colon
 from ._internal.helper import argout_wrapper_decorators
-from ._internal.package_proxy import numpy as np
 
 
 def uplus(*args):
@@ -71,10 +72,11 @@ kron = argout_wrapper_decorators()(np.kron)
 def unique(x, *args, nargout=3):
     if nargout != 3 or args:
         raise NotImplementedError("unique")
-    C, ia, ic = np.unique(
+    c, ia, ic = np.unique(
         x.reshape(-1, order="F"), return_index=True, return_inverse=True
     )
-    return M[C.reshape(-1, 1)], M[ia.reshape(-1, 1) + 1], M[ic.reshape(-1, 1) + 1]
+    shape = (1, -1) if np.shape(x)[0] == 1 else (-1, 1)
+    return M[c.reshape(*shape)], M[ia.reshape(-1, 1) + 1], M[ic.reshape(-1, 1) + 1]
 
 
 def mpower(*args):

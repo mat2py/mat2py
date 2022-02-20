@@ -3,10 +3,11 @@ from types import SimpleNamespace as _SimpleNamespace
 
 import scipy.io
 
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import M, _convert_scalar
+from ._internal.cell import cell
 from ._internal.helper import argout_wrapper_decorators
-from ._internal.package_proxy import numpy as np
-from .datatypes import cell
 
 
 def setmcruserdata(*args):
@@ -347,7 +348,7 @@ def load(path, *args):
                 new_dtype = np.float_
             elif np.issubdtype(obj.dtype, np.complexfloating):
                 new_dtype = np.complex_
-            if new_dtype.itemsize > obj.dtype.itemsize:
+            if np.dtype(new_dtype).itemsize > np.dtype(obj.dtype).itemsize:
                 return _convert_scalar(M[obj.astype(new_dtype)])
             else:
                 return _convert_scalar(M[obj])

@@ -6,7 +6,7 @@ import operator
 from functools import reduce
 from itertools import chain, zip_longest
 
-from .package_proxy import numpy as np
+from mat2py.common.backends import numpy as np
 
 
 class End:
@@ -222,10 +222,10 @@ def _estimate_size(shape_or_array, item):
 
 
 def _convert_to_2d(vec, shape):
-    if np.size(vec) != np.max(np.shape(vec)):
-        return vec
-    else:
+    if isinstance(vec, np.ndarray) and np.size(vec) == np.max(np.shape(vec)):
         return vec.reshape(shape)
+    else:
+        return vec
 
 
 class MatArray(np.ndarray):

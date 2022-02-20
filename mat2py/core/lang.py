@@ -1,7 +1,14 @@
 # type: ignore
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import I, M, end
+from ._internal.cell import C
 from ._internal.helper import argout_wrapper_decorators, special_variables
-from ._internal.package_proxy import numpy as np
+
+
+def copy(x):
+    # ToDo: we should do copy-on-write
+    return x
 
 
 def doclink(*args):

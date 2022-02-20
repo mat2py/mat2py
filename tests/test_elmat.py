@@ -16,7 +16,7 @@ def test_find():
         ],
     )
     assert_same_array(
-        find(x),
+        find(x, nargout=1),
         M[
             1,
             3,

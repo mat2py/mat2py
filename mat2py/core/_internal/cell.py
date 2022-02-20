@@ -2,8 +2,9 @@
 
 from types import SimpleNamespace
 
+from mat2py.common.backends import numpy as np
+
 from .array import M, MatArray, _convert_round, _convert_scalar, _convert_to_2d
-from .package_proxy import numpy as np
 
 
 class CellArray(MatArray):

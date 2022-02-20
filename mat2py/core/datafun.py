@@ -1,18 +1,20 @@
 # type: ignore
 import functools
 
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import M, _convert_round, _convert_scalar
-from ._internal.helper import argout_wrapper_decorators
-from ._internal.package_proxy import numpy as np
 
 
 @functools.lru_cache(maxsize=10)
-def _sum_like_decorators():
+def _sum_like_decorators(default_if_empty=None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(x, *args):
             if args and isinstance(args[-1], str):
                 raise NotImplementedError
+            if np.size(x) == 0 and default_if_empty is not None:
+                return default_if_empty
             dim = (
                 _convert_scalar(args[0]) - 1 if args else np.argmax(M[np.shape(x)] > 1)
             )
@@ -27,10 +29,14 @@ def _sum_like_decorators():
     return decorator
 
 
-(sum, max, min, prod, mean, median,) = (
-    _sum_like_decorators()(f)
-    for f in (np.sum, np.max, np.min, np.prod, np.mean, np.median)
-)
+sum = _sum_like_decorators(default_if_empty=0)(np.sum)
+prod = _sum_like_decorators(default_if_empty=1)(np.prod)
+(
+    max,
+    min,
+    mean,
+    median,
+) = (_sum_like_decorators()(f) for f in (np.max, np.min, np.mean, np.median))
 
 
 def mode(*args):
@@ -77,12 +83,27 @@ def fft2(*args):
     raise NotImplementedError("fft2")
 
 
-def sort(a, *args):
-    if args:
-        raise NotImplementedError("sort")
+def sort(a, *args, nargout=1):
+    if np.size(a) < 2:
+        return a
+    order = "ascend"
+    args = [_convert_scalar(i) for i in args]
+    if len(args) > 0 and isinstance(args[-1], str):
+        order = args[-1]
+        args = args[:-1]
+    if len(args) > 0:
+        dim = args[0]
     else:
-        axis = -1 if np.size(a) == np.max(np.shape(a)) else 0
-        return M[np.sort(a, axis)]
+        dim = [i for i, s in enumerate(np.shape(a)) if s > 1]
+        dim = dim[0] if len(dim) > 0 else 0
+    res = M[np.sort(a, dim)]
+    if order == "descend":
+        res = np.flip(res, dim)
+
+    if nargout == 1:
+        return res
+    else:
+        raise NotImplementedError
 
 
 def histcounts2(*args):

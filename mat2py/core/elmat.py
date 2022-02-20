@@ -1,14 +1,15 @@
 # type: ignore
 import functools
 
+from mat2py.common.backends import linalg as _linalg
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import M, _convert_round, _convert_scalar, ind2sub
 from ._internal.helper import argout_wrapper_decorators, special_variables
-from ._internal.package_proxy import linalg as _linalg
-from ._internal.package_proxy import numpy as np
 
 
 @functools.lru_cache(maxsize=10)
-def _zeros_like_decorators():
+def _zeros_like_decorators(expand_shape=False):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args):
@@ -32,8 +33,11 @@ def _zeros_like_decorators():
                 shape = shape[0].reshape(-1).tolist()
             elif len(shape) == 1:
                 shape = (shape[0], shape[0])
-
-            return func(tuple(_convert_round(s) for s in shape), dtype=dtype)
+            shape = tuple(_convert_round(s) for s in shape)
+            if expand_shape:
+                return M[func(*expand_shape, dtype=dtype)]
+            else:
+                return M[func(shape, dtype=dtype)]
 
         return wrapper
 
@@ -74,7 +78,7 @@ def gallery(*args):
     raise NotImplementedError("gallery")
 
 
-eye = _zeros_like_decorators()(np.eye)
+eye = _zeros_like_decorators(expand_shape=True)(np.eye)
 
 
 i = special_variables(1j)
@@ -293,7 +297,14 @@ inf = special_variables(np.inf)
 Inf = inf
 
 
-def find(x, *args):
+def find(x, *args, nargout=None):
+    if nargout is None:
+        # ToDo: use inspect to get stack for nargout?
+        nargout = 2
+
+    if nargout == 2:
+        return tuple(M[i] + 1 for i in M[x].nonzero())
+
     if len(args) == 0:
         ind = np.where(x)
         if x.ndim < 2:

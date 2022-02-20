@@ -1,9 +1,10 @@
 # type: ignore
+from mat2py.common.backends import numpy as np
+
 from ._internal.array import M
 from ._internal.helper import argout_wrapper_decorators
-from ._internal.package_proxy import numpy as np
 
-(exp, real, imag, abs, angle, conj, sin, cos, sinh, cosh, tan, tanh,) = (
+(exp, real, imag, abs, angle, conj, sin, cos, sinh, cosh, tan, tanh, sqrt) = (
     argout_wrapper_decorators()(f)
     for f in (
         np.exp,
@@ -18,6 +19,7 @@ from ._internal.package_proxy import numpy as np
         np.cosh,
         np.tan,
         np.tanh,
+        np.sqrt,
     )
 )
 
@@ -147,10 +149,6 @@ def deg2rad(*args):
 
 def acscd(*args):
     raise NotImplementedError("acscd")
-
-
-def sqrt(*args):
-    raise NotImplementedError("sqrt")
 
 
 def secd(*args):

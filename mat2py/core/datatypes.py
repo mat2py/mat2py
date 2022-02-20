@@ -1,8 +1,5 @@
 # type: ignore
-from ._internal.array import M
-from ._internal.cell import C, cell
-from ._internal.helper import argout_wrapper_decorators
-from ._internal.package_proxy import numpy as np
+from ._internal.cell import cell
 
 
 def iscom(*args):
