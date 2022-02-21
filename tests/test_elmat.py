@@ -16,7 +16,7 @@ def test_find():
         ],
     )
     assert_same_array(
-        find(x, nargout=1),
+        find(x),
         M[
             1,
             3,
@@ -25,6 +25,10 @@ def test_find():
             6,
         ],
     )
+    r = zeros(5, 1, "like", 1)
+    r[I[:]], c = find(x)
+    assert_same_array(r, M[1, 1, 2, 1, 2])
+    assert_same_array(c, M[1, 2, 2, 3, 3])
 
 
 def test_zeros():

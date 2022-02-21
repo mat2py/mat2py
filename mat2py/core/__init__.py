@@ -45,6 +45,7 @@ from .winfun import *
 # - np
 # - argout_wrapper_decorators
 # - special_variables
+# - nargout_from_stack
 
 
 # ToDo: Add hidden functions to __all__

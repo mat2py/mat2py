@@ -5,7 +5,11 @@ from mat2py.common.backends import linalg as _linalg
 from mat2py.common.backends import numpy as np
 
 from ._internal.array import M, _convert_round, _convert_scalar, ind2sub
-from ._internal.helper import argout_wrapper_decorators, special_variables
+from ._internal.helper import (
+    argout_wrapper_decorators,
+    nargout_from_stack,
+    special_variables,
+)
 
 
 @functools.lru_cache(maxsize=10)
@@ -299,11 +303,15 @@ Inf = inf
 
 def find(x, *args, nargout=None):
     if nargout is None:
-        # ToDo: use inspect to get stack for nargout?
-        nargout = 2
+        nargout = nargout_from_stack()
 
     if nargout == 2:
-        return tuple(M[i] + 1 for i in M[x].nonzero())
+        r, c = M[x].nonzero()
+        ic = np.argsort(c)
+        r, c = M[r[ic] + 1], M[c[ic] + 1]
+        if np.ndim(x) >= 2 or np.shape(x)[0] > 1:
+            r, c = r.reshape(-1, 1), c.reshape(-1, 1)
+        return r, c
 
     if len(args) == 0:
         ind = np.where(x)
