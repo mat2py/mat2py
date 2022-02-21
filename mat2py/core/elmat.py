@@ -35,7 +35,7 @@ def _zeros_like_decorators(expand_shape=False):
                 shape = (shape[0], shape[0])
             shape = tuple(_convert_round(s) for s in shape)
             if expand_shape:
-                return M[func(*expand_shape, dtype=dtype)]
+                return M[func(*shape, dtype=dtype)]
             else:
                 return M[func(shape, dtype=dtype)]
 
