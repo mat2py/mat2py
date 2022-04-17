@@ -17,6 +17,14 @@ mat2py mean to be drop-in replacement of Matlab by wrapping Numpy/Scipy/... pack
 
 </div>
 
+For instance usage, try the *Fake Matlab in Browser* [here](https://console.mat2py.org/). 
+Please note:
+- You might need quite long time to initilaize the console for the first time. Checkout the browser console or network traffic for progress.
+- Only one line matlab expression supported, for example `[1; 2; 3]*[1 2 3]`.
+- Only few Matlab core functions supported for now.
+
+The final goal is to create a **serverless**, **Matlab compatiable** console completely in end-users' browser.
+
 ## First Steps
 
 ### Installation
@@ -121,3 +129,4 @@ This project is licensed under the terms of the `MIT` license. See [LICENSE](htt
 
 - This project was initially generated with [`python-package-template`](https://github.com/TezRomacH/python-package-template)
 - The Matlab to Python translator `mh_python` is developed under fork of [MISS HIT](https://github.com/florianschanda/miss_hit), a fantastic Matlab static analysis tool.
+- The [serverless console](https://console.mat2py.org/) is created based on [Pyodide](https://pyodide.org/).
