@@ -109,8 +109,10 @@ def gcbf(*args):
     raise NotImplementedError("gcbf")
 
 
-def shg(*args):
-    raise NotImplementedError("shg")
+def shg():
+    import matplotlib.pyplot as plt
+
+    plt.show()
 
 
 def resetplotview(*args):

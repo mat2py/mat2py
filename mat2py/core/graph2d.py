@@ -106,7 +106,18 @@ def basicfitdatastat(*args):
 
 
 def plot(*args):
-    raise NotImplementedError("plot")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    while args:
+        x, y, *args = args
+        if args and isinstance(args[0], str):
+            style, *args = args
+            style = (style,)
+        else:
+            style = tuple()
+        ax.plot(x, y, *style)
+    return fig
 
 
 def box(*args):

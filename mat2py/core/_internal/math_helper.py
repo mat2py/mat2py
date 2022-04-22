@@ -46,7 +46,7 @@ def _max_like_decorators():
                 and isinstance(args[1], np.ndarray)
                 and np.size(args[1]) == 0
             ):
-                return _sum_like_decorators()(func)(*args[0], *args[2:])
+                return _sum_like_decorators()(func)(args[0], *args[2:])
             else:
                 return M[pfunc(*args)]
 

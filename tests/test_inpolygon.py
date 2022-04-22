@@ -17,9 +17,9 @@ def inpolygon(x, y, xv, yv, nargout=None):
     y = y[I[:]].T
     mask = (((x >= min(xv)) & (x <= max(xv))) & (y >= min(yv))) & (y <= max(yv))
     if _not(_any(mask)):
-        _in = false(inputSize)
+        _in = zeros(inputSize) != 0
         on = copy(_in)
-        return
+        return (_in, on)[:nargout]
     xv, yv = close_loops(xv, yv)
     Nv = length(xv)
     xrange = max(xv) - min(xv)
@@ -188,15 +188,16 @@ def test_inpolygon():
     x = rand(1000, 1)
     y = rand(1000, 1)
     (_in,) = inpolygon(x, y, xv, yv)
-    # plot(xv, yv, x(_in), y(_in), ".r", x(_not(_in)), y(_not(_in)), ".b")
+    plot(xv, yv, x(_in), y(_in), ".r", x(_not(_in)), y(_not(_in)), ".b")
+    # shg()
 
     # TODO: still have problem with following example
-    # xv = M[[0, 3, 3, 0, 0, NaN, 1, 1, 2, 2, 1]]
-    # yv = M[[0, 0, 3, 3, 0, NaN, 1, 2, 2, 1, 1]]
-    # x = rand(1000, 1) * 3
-    # y = rand(1000, 1) * 3
-    # _in = inpolygon(x, y, xv, yv)
-    # plot(xv, yv, x(_in), y(_in), ".r", x(_not(_in)), y(_not(_in)), ".b")
+    xv = M[[0, 3, 3, 0, 0, NaN, 1, 1, 2, 2, 1]]
+    yv = M[[0, 0, 3, 3, 0, NaN, 1, 2, 2, 1, 1]]
+    x = rand(1000, 1) * 3
+    y = rand(1000, 1) * 3
+    (_in,) = inpolygon(x, y, xv, yv)
+    plot(xv, yv, x(_in), y(_in), ".r", x(_not(_in)), y(_not(_in)), ".b")
 
     # for plot inside matlab
     disp("")
