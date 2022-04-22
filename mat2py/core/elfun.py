@@ -123,8 +123,10 @@ def tand(*args):
     raise NotImplementedError("tand")
 
 
-def sign(*args):
-    raise NotImplementedError("sign")
+def sign(a):
+    if np.issubdtype(M[a].dtype, np.complex_):
+        return M[a / np.abs(a)]
+    return M[np.sign(a)]
 
 
 def isreal(*args):

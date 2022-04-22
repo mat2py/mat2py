@@ -22,3 +22,10 @@ def test_unique():
 def test_mrdivide():
     Wn = mrdivide((colon(0, 3)).T, 8)
     assert Wn.shape == (4, 1)
+
+
+def test_times():
+    a = M[[1, 2]]
+
+    # TODO: this should raise dimension mismatch error in matlab
+    a.H * a

@@ -3,40 +3,15 @@ import functools
 
 from mat2py.common.backends import numpy as np
 
-from ._internal.array import M, _convert_round, _convert_scalar
-
-
-@functools.lru_cache(maxsize=10)
-def _sum_like_decorators(default_if_empty=None):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(x, *args):
-            if args and isinstance(args[-1], str):
-                raise NotImplementedError
-            if np.size(x) == 0 and default_if_empty is not None:
-                return default_if_empty
-            dim = (
-                _convert_scalar(args[0]) - 1 if args else np.argmax(M[np.shape(x)] > 1)
-            )
-            res = func(x, _convert_round(dim), keepdims=True)
-            r = np.argmax(np.array(np.shape(res))[::-1] > 1)
-            if r > 0 and np.ndim(x) - r > 1:
-                res = res.reshape(res.shape[:-r])
-            return M[res]
-
-        return wrapper
-
-    return decorator
-
+from ._internal.array import M, _convert_scalar
+from ._internal.math_helper import _max_like_decorators, _sum_like_decorators
 
 sum = _sum_like_decorators(default_if_empty=0)(np.sum)
 prod = _sum_like_decorators(default_if_empty=1)(np.prod)
-(
-    max,
-    min,
-    mean,
-    median,
-) = (_sum_like_decorators()(f) for f in (np.max, np.min, np.mean, np.median))
+mean = _sum_like_decorators()(np.mean)
+median = _sum_like_decorators()(np.median)
+max = _max_like_decorators()(np.max, np.argmax, np.maximum)
+min = _max_like_decorators()(np.min, np.argmax, np.minimum)
 
 
 def mode(*args):
@@ -55,8 +30,11 @@ def trapz(*args):
     raise NotImplementedError("trapz")
 
 
-def diff(*args):
-    raise NotImplementedError("diff")
+def diff(a):
+    if np.size(a) == 0:
+        return M[np.zeros_like(a)]
+    d = next(d for d, s in enumerate(np.shape(a)) if s > 1)
+    return M[np.diff(a, axis=d)]
 
 
 def cumtrapz(*args):

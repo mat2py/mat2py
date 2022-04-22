@@ -4,48 +4,13 @@ import functools
 from mat2py.common.backends import linalg as _linalg
 from mat2py.common.backends import numpy as np
 
-from ._internal.array import M, _convert_round, _convert_scalar, ind2sub
+from ._internal.array import M
 from ._internal.helper import (
     argout_wrapper_decorators,
     nargout_from_stack,
     special_variables,
 )
-
-
-@functools.lru_cache(maxsize=10)
-def _zeros_like_decorators(expand_shape=False):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args):
-            args = tuple(_convert_scalar(i) for i in args)
-            dtype = np.float_
-            shape = args
-            if len(args) >= 2 and args[-2] == "like":
-                dtype = M[args[-1]].dtype
-                shape = args[:-2]
-            elif isinstance(args[-1], str):
-                classname = args[-1]
-                dtype = {
-                    "double": np.float64,
-                    "single": np.float32,
-                }.get(classname, getattr(np, classname))
-                shape = args[:-1]
-
-            if len(shape) == 0:
-                shape = (1, 1)
-            elif len(shape) == 1 and isinstance(shape[0], np.ndarray):
-                shape = shape[0].reshape(-1).tolist()
-            elif len(shape) == 1:
-                shape = (shape[0], shape[0])
-            shape = tuple(_convert_round(s) for s in shape)
-            if expand_shape:
-                return M[func(*shape, dtype=dtype)]
-            else:
-                return M[func(shape, dtype=dtype)]
-
-        return wrapper
-
-    return decorator
+from ._internal.math_helper import _zeros_like_decorators
 
 
 def realmin(*args):
@@ -54,7 +19,7 @@ def realmin(*args):
 
 def reshape(x, *args):
     if len(args) == 1 and isinstance(args[0], np.ndarray) and np.size(args[0]) > 0:
-        return x.reshape(tuple(i for i in args[0]), order="F")
+        return x.reshape(args[0].reshape(-1).astype(int), order="F")
     else:
         shape = tuple(-1 if np.size(i) == 0 else i for i in args)
         return x.reshape(shape, order="F")
@@ -74,8 +39,10 @@ def ndims(*args):
     raise NotImplementedError("ndims")
 
 
-def isvector(*args):
-    raise NotImplementedError("isvector")
+def isvector(a):
+    if np.ndim(a) == 2:
+        return np.min(np.shape(a)) <= 1
+    return np.ndim(a) < 2
 
 
 def gallery(*args):
@@ -231,9 +198,9 @@ pi = special_variables(np.pi)
 
 def size(a):
     if np.size(a) == 1 and np.ndim(a) < 2:
-        return 1, 1
+        return M[[1, 1]]
     else:
-        return np.shape(a)
+        return M[np.shape(a)]
 
 
 def invhilb(*args):
@@ -316,9 +283,9 @@ def find(x, *args, nargout=None):
     if len(args) == 0:
         ind = np.where(x)
         if x.ndim < 2:
-            return ind[0].reshape((1, -1) if x.shape[0] == 1 else (-1, 1)) + 1
+            return M[ind[0].reshape((1, -1) if x.shape[0] == 1 else (-1, 1)) + 1]
         else:
-            return np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)
+            return M[np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)]
 
     raise NotImplementedError("find")
 
@@ -331,8 +298,7 @@ def intmin(*args):
     raise NotImplementedError("intmin")
 
 
-def isnan(*args):
-    raise NotImplementedError("isnan")
+isnan = np.isnan
 
 
 def isequalwithequalnans(*args):
@@ -344,8 +310,9 @@ def linspace(*args):
     return np.linspace(*args)
 
 
-def bsxfun(*args):
-    raise NotImplementedError("bsxfun")
+def bsxfun(fun, a, b):
+    # np.random.randint(0,1, tuple(np.maximum(da, db)*(1 if da>0 and db>0 else 0) for da, db in zip(a.shape, b.shape))).astype(np.bool)
+    return M[fun(a, b)]
 
 
 def rot90(*args):

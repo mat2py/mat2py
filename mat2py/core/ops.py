@@ -3,6 +3,7 @@ from mat2py.common.backends import numpy as np
 
 from ._internal.array import M, colon
 from ._internal.helper import argout_wrapper_decorators
+from ._internal.math_helper import _sum_like_decorators
 
 
 def uplus(*args):
@@ -127,8 +128,7 @@ def mldivide(a, b):
         return M[np.linalg.solve(a[1], b[1])]
 
 
-def any(*args):
-    raise NotImplementedError("any")
+_any = _sum_like_decorators(default_if_empty=1)(np.any)
 
 
 def transpose(*args):
@@ -139,8 +139,7 @@ def idivide(*args):
     raise NotImplementedError("idivide")
 
 
-def lt(*args):
-    raise NotImplementedError("lt")
+lt = np.less
 
 
 def subsindex(*args):
@@ -231,8 +230,7 @@ def relop(*args):
     raise NotImplementedError("relop")
 
 
-def _not(*args):
-    raise NotImplementedError("_not")
+_not = np.logical_not
 
 
 def vertcat(*args):
