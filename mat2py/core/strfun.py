@@ -1,4 +1,5 @@
 # type: ignore
+from ._internal.array import M
 
 
 def regexptranslate(*args):
@@ -197,8 +198,8 @@ def strncmpi(*args):
     raise NotImplementedError("strncmpi")
 
 
-def num2str(*args):
-    raise NotImplementedError("num2str")
+def num2str(a):
+    return M[a].astype(str)
 
 
 def bin2dec(*args):

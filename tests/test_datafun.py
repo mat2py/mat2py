@@ -37,5 +37,6 @@ def test_sum():
     ]
     assert_same_array(sum(M[1:10]), M[[55]])
     assert_same_array(sum(A), M[[11, 6, 11]])
+    assert_same_array(sum(A, "all"), M[28])
     assert_same_array(sum(A, 2), M[6, 11, 11])
     assert_same_array(sum(ones(4, 2, 3), 3), ones(4, 2) * 3)

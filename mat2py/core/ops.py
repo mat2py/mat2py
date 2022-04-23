@@ -2,7 +2,11 @@
 from mat2py.common.backends import numpy as np
 
 from ._internal.array import M, colon
-from ._internal.helper import argout_wrapper_decorators
+from ._internal.helper import (
+    argout_wrapper_decorators,
+    last_arg_as_kwarg,
+    nargout_from_stack,
+)
 from ._internal.math_helper import _sum_like_decorators
 
 
@@ -59,8 +63,27 @@ def arith(*args):
     raise NotImplementedError("arith")
 
 
-def ismember(*args):
-    raise NotImplementedError("ismember")
+@last_arg_as_kwarg("row_as_one", ("rows",))
+def ismember(a, b, row_as_one=False, nargout=None):
+    if nargout is None:
+        nargout = nargout_from_stack(3)
+
+    if row_as_one:
+        raise NotImplementedError("ismember")
+
+    if nargout == 1:
+        return M[np.isin(a, b)]
+
+    a_shape = np.shape(a)
+    a = a.reshape(-1)
+    b = b.reshape(-1, order="F")
+    sort_idx = b.argsort()
+    out = sort_idx[np.searchsorted(b, a, sorter=sort_idx)]
+    ia = b[out] == a
+    out = out + 1
+    out[np.logical_not(ia)] = 0
+
+    return M[ia.reshape(*a_shape)], M[out.reshape(*a_shape)]
 
 
 def bitcmp(*args):

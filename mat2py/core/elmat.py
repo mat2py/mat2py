@@ -197,10 +197,12 @@ pi = special_variables(np.pi)
 
 
 def size(a):
-    if np.size(a) == 1 and np.ndim(a) < 2:
+    shape = list(np.shape(a))
+    if len(shape) == 0:
         return M[[1, 1]]
-    else:
-        return M[np.shape(a)]
+    if len(shape) == 1:
+        return M[[1, shape[0]]]
+    return M[shape]
 
 
 def invhilb(*args):
@@ -241,8 +243,8 @@ def logspace(*args):
     raise NotImplementedError("logspace")
 
 
-def isempty(*args):
-    raise NotImplementedError("isempty")
+def isempty(a):
+    return M[int(np.size(a) == 0)]
 
 
 def isscalar(*args):

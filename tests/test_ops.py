@@ -24,6 +24,40 @@ def test_mrdivide():
     assert Wn.shape == (4, 1)
 
 
+def test_ismember():
+    A = reshape(M[[5, 3, 4, 2]], 2, M[[]])
+    B = reshape(M[[2, 4, 4, 4, 6, 8]], M[[]], 2)
+
+    Lia = ismember(A, B)
+    assert_same_array(
+        Lia,
+        M[
+            [0, 1],
+            [0, 1],
+        ],
+        ignore_bool=True,
+    )
+
+    Lia, Locb = ismember(A, B)
+
+    assert_same_array(
+        Lia,
+        M[
+            [0, 1],
+            [0, 1],
+        ],
+        ignore_bool=True,
+    )
+
+    assert_same_array(
+        Locb,
+        M[
+            [0, 2],
+            [0, 1],
+        ],
+    )
+
+
 def test_times():
     a = M[[1, 2]]
 

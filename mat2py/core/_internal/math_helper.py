@@ -4,16 +4,18 @@ import functools
 from mat2py.common.backends import numpy as np
 
 from .array import M, _convert_round, _convert_scalar
-from .helper import nargout_from_stack
+from .helper import last_arg_as_kwarg, nargout_from_stack
 
 
 @functools.lru_cache(maxsize=10)
 def _sum_like_decorators(default_if_empty=None):
     def decorator(func):
         @functools.wraps(func)
-        def wrapper(x, *args):
-            if args and isinstance(args[-1], str):
-                raise NotImplementedError
+        @last_arg_as_kwarg("all_elements", ("all",))
+        def wrapper(x, *args, all_elements=False):
+            if all_elements:
+                assert not args
+                return M[func(x)]
             if np.size(x) == 0 and default_if_empty is not None:
                 return default_if_empty
             dim = (
