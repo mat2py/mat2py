@@ -104,6 +104,8 @@ def floor(x, *args):
     if args:
         raise NotImplementedError("floor")
     else:
+        if np.issubdtype(M[x].dtype, np.complex_):
+            return M[1j * np.floor(np.imag(x)) + np.floor(np.real(x))]
         return M[np.floor(x)]
 
 

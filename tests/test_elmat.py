@@ -42,4 +42,110 @@ def test_zeros():
 
 
 def test_isempty():
-    assert_same_array(isempty(ones(5, 0)), M[1])
+    A = M[
+        [1, 2, 3],
+        [4, 5, 6],
+        [0, 0, nan],
+    ]
+    B = M[[]]
+    assert_same_array(isempty(A), M[0])
+    assert_same_array(isempty(B), M[1])
+
+
+def test_meshgrid():
+    x = M[0:2:3]
+    y = M[0:1:3]
+    z = M[0:3:3]
+
+    X, Y, Z = meshgrid(x, y, z)
+    assert_same_array(
+        X[I[:, :, 1]],
+        M[
+            [0, 2],
+            [0, 2],
+            [0, 2],
+            [0, 2],
+        ],
+    )
+    assert_same_array(
+        X[I[:, :, 2]],
+        M[
+            [0, 2],
+            [0, 2],
+            [0, 2],
+            [0, 2],
+        ],
+    )
+    assert_same_array(
+        Y[I[:, :, 1]],
+        M[
+            [0, 0],
+            [1, 1],
+            [2, 2],
+            [3, 3],
+        ],
+    )
+    assert_same_array(
+        Y[I[:, :, 2]],
+        M[
+            [0, 0],
+            [1, 1],
+            [2, 2],
+            [3, 3],
+        ],
+    )
+    assert_same_array(
+        Z[I[:, :, 1]],
+        M[
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+        ],
+    )
+    assert_same_array(
+        Z[I[:, :, 2]],
+        M[
+            [3, 3],
+            [3, 3],
+            [3, 3],
+            [3, 3],
+        ],
+    )
+
+    X1, Y1, Z1 = meshgrid(x)
+    assert_same_array(
+        X1[I[:, :, 1]],
+        M[
+            [0, 2],
+            [0, 2],
+        ],
+    )
+    assert_same_array(
+        X1[I[:, :, 2]],
+        M[
+            [0, 2],
+            [0, 2],
+        ],
+    )
+    assert_same_array(
+        Y1[I[:, :, 1]],
+        M[
+            [0, 0],
+            [2, 2],
+        ],
+    )
+    assert_same_array(
+        Y1[I[:, :, 2]],
+        M[
+            [0, 0],
+            [2, 2],
+        ],
+    )
+    assert_same_array(
+        Z1[I[:, :, 1]],
+        M[
+            [0, 0],
+            [0, 0],
+        ],
+    )

@@ -1,3 +1,5 @@
+# type: ignore
+
 import mat2py as mp
 from mat2py.core import *
 from mat2py.core.ops import _any, _not

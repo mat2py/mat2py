@@ -63,3 +63,40 @@ def test_times():
 
     # TODO: this should raise dimension mismatch error in matlab
     a.H * a
+
+
+def test_any():
+    from mat2py.core.ops import _any
+
+    A = M[
+        [0, 1, 2],
+        [2, 3, 4],
+        [0, 4, 2],
+        [4, 2, 6],
+    ]
+
+    assert_same_array(
+        _any(A),
+        M[[1, 1, 1]],
+        ignore_bool=True,
+    )
+    assert_same_array(
+        _any(A == 1),
+        M[[0, 1, 0]],
+        ignore_bool=True,
+    )
+    assert_same_array(
+        _any(A, "all"),
+        M[[1]],
+        ignore_bool=True,
+    )
+    assert_same_array(
+        _any(A == 3, 2),
+        M[
+            0,
+            1,
+            0,
+            0,
+        ],
+        ignore_bool=True,
+    )

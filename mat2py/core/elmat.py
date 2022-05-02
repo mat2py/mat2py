@@ -178,8 +178,15 @@ def isrow(*args):
     raise NotImplementedError("isrow")
 
 
-def meshgrid(*args):
-    raise NotImplementedError("meshgrid")
+def meshgrid(x, *args, nargout=None):
+    if nargout is None:
+        nargout = nargout_from_stack()
+
+    if nargout != 1 + len(args):
+        assert len(args) == 0
+        args = (x,) * (nargout - 1)
+
+    return tuple(M[i] for i in np.meshgrid(x, *args))
 
 
 eps = special_variables(np.finfo(float).eps)
