@@ -73,6 +73,11 @@ class End:
 end = End()
 
 
+def _can_cast_to_number(x):
+    dtype = M[x].dtype
+    return np.issubdtype(dtype, np.number) or np.issubdtype(dtype, np.bool_)
+
+
 def _convert_scalar(x):
     if isinstance(x, np.ndarray) and x.size == 1:
         return x.reshape(-1)[0]

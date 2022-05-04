@@ -1,5 +1,6 @@
 # type: ignore
-from ._internal.cell import cell
+from ._internal.cell import CellArray, cell
+from ._internal.struct import StructArray, struct
 
 
 def iscom(*args):
@@ -78,8 +79,7 @@ def cast(*args):
     raise NotImplementedError("cast")
 
 
-def fieldnames(*args):
-    raise NotImplementedError("fieldnames")
+from ._internal.struct import fieldnames
 
 
 def single(*args):
@@ -300,10 +300,6 @@ def uint32(*args):
 
 def arrayfun(*args):
     raise NotImplementedError("arrayfun")
-
-
-def struct(*args):
-    raise NotImplementedError("struct")
 
 
 def isfloat(*args):

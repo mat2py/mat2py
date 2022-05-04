@@ -30,6 +30,45 @@ def test_find():
     assert_same_array(r, M[1, 1, 2, 1, 2])
     assert_same_array(c, M[1, 2, 2, 3, 3])
 
+    X = M[
+        [0, 0, 3, 13],
+        [5, 11, 10, 8],
+        [9, 7, 0, 12],
+        [4, 14, 15, 0],
+    ]
+    k = find(X < 10, 5)
+    assert_same_array(
+        k,
+        M[
+            1,
+            2,
+            3,
+            4,
+            5,
+        ],
+    )
+    n0 = find(X == 0)
+    assert_same_array(
+        n0,
+        M[
+            1,
+            5,
+            11,
+            16,
+        ],
+    )
+    last3nz = find(X, 3, "last")
+    assert_same_array(
+        last3nz,
+        M[
+            13,
+            14,
+            15,
+        ],
+    )
+    firstnz = find(X, 1)
+    assert_same_array(firstnz, 2)
+
 
 def test_zeros():
     assert_same_array(size(ones(5, 0)), M[[5, 0]])
@@ -149,3 +188,14 @@ def test_meshgrid():
             [0, 0],
         ],
     )
+
+
+def test_isequal():
+    A1 = struct("test", 0.005, "myval", M[[1, 2, 3]])
+    A2 = struct("myval", M[[1, 2, 3]], "test", 0.005)
+    A3 = struct("myval", M[[1, 2, 3]], "test", 0.005)
+    A4 = struct("myval", M[[1, 2, 3]], "test", NaN)
+
+    assert isequal(A1, A2) == 1
+    assert isequal(A1, A2, A3) == 1
+    assert isequal(A3, A4) == 0

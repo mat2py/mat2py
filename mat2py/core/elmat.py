@@ -4,13 +4,16 @@ import functools
 from mat2py.common.backends import linalg as _linalg
 from mat2py.common.backends import numpy as np
 
-from ._internal.array import M
+from ._internal.array import M, _can_cast_to_number, _convert_round, _convert_scalar
+from ._internal.cell import CellArray
 from ._internal.helper import (
     argout_wrapper_decorators,
+    last_arg_as_kwarg,
     nargout_from_stack,
     special_variables,
 )
 from ._internal.math_helper import _zeros_like_decorators
+from ._internal.struct import StructArray, _fieldnames
 
 
 def realmin(*args):
@@ -277,26 +280,36 @@ inf = special_variables(np.inf)
 Inf = inf
 
 
-def find(x, *args, nargout=None):
+@last_arg_as_kwarg("direction", ("first", "last"))
+def find(x, *args, direction="first", nargout=None):
     if nargout is None:
-        nargout = nargout_from_stack()
-
-    if nargout == 2:
-        r, c = M[x].nonzero()
-        ic = np.argsort(c)
-        r, c = M[r[ic] + 1], M[c[ic] + 1]
-        if np.ndim(x) >= 2 or np.shape(x)[0] > 1:
-            r, c = r.reshape(-1, 1), c.reshape(-1, 1)
-        return r, c
+        nargout = nargout_from_stack(3)
 
     if len(args) == 0:
+        if nargout == 2:
+            r, c = M[x].nonzero()
+            ic = np.argsort(c)
+            r, c = M[r[ic] + 1], M[c[ic] + 1]
+            if np.ndim(x) >= 2 or np.shape(x)[0] > 1:
+                r, c = r.reshape(-1, 1), c.reshape(-1, 1)
+            return r, c
+
         ind = np.where(x)
         if x.ndim < 2:
             return M[ind[0].reshape((1, -1) if x.shape[0] == 1 else (-1, 1)) + 1]
         else:
             return M[np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)]
 
-    raise NotImplementedError("find")
+    assert len(args) == 1
+    n = _convert_scalar(_convert_round(args[0]))
+    assert n > 0
+    # TODO: improve this slow implementation
+    res = find(x, nargout=nargout)
+
+    if direction == "first":
+        return res[:n] if nargout == 1 else (res[0][:n], res[1][:n])
+    else:
+        return res[-n:] if nargout == 1 else (res[0][-n:], res[1][-n:])
 
 
 def triu(*args):
@@ -333,7 +346,31 @@ def circshift(*args):
 
 
 def isequal(*args):
-    raise NotImplementedError("isequal")
+    assert len(args) > 1
+    if len(args) == 2:
+        a, b = args
+        if isinstance(a, StructArray):
+            if not isinstance(b, StructArray):
+                return False
+            an, bn = map(_fieldnames, args)
+            names = {*an, *bn}
+            if len(an) == len(bn) and len(an) == len(names):
+                return all(isequal(a[n], b[n]) for n in names)
+            return False
+
+        if _can_cast_to_number(a):
+            if not _can_cast_to_number(b):
+                return False
+            a = M[a]
+            b = M[b]
+
+        if isinstance(a, np.ndarray):
+            if not isinstance(b, np.ndarray):
+                return False
+            return a.shape == b.shape and np.all(a == b)
+        raise NotImplementedError
+
+    return all(isequal(i, j) for i, j in zip(args[:-1], args[1:]))
 
 
 toeplitz = argout_wrapper_decorators()(_linalg.toeplitz)

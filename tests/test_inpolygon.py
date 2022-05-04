@@ -3,6 +3,7 @@
 import mat2py as mp
 from mat2py.core import *
 from mat2py.core.ops import _any, _not
+from tests.helper import assert_same_array
 
 
 def inpolygon(x, y, xv, yv, nargout=None):
@@ -209,6 +210,61 @@ def test_inpolygon():
     disp(f'y = [{" ".join(y.astype(str).reshape(-1).tolist())}]')
     disp(f'in = 1==[{" ".join(_in.astype(int).astype(str).reshape(-1).tolist())}]')
     disp("plot(xv,yv,x(in),y(in),'.r',x(~in),y(~in),'.b')")
+
+
+def test_inpolygon_real_case():
+    L = M[
+        [
+            (pi * 1) / 4,
+            (pi * 3) / 4,
+            (pi * 5) / 4,
+            (pi * 7) / 4,
+            (pi * 1) / 4,
+            nan,
+            0,
+            1.25663706143592,
+            2.51327412287183,
+            3.76991118430775,
+            5.02654824574367,
+            6.28318530717959,
+        ]
+    ]
+    xv = cos(L).H
+    yv = sin(L).H
+    xq = M[[0.5377, 1.8339, -2.2588, 0.8622, 0.3188, -1.3077, -0.4336, 0, 1, 2.7694]]
+    yq = M[
+        [
+            -0.8637,
+            0.0774,
+            -1.2141,
+            -1.1135,
+            -0.0068,
+            1.5326,
+            -0.7697,
+            sin(pi / 4),
+            0,
+            1.1174,
+        ]
+    ]
+    _in, on = inpolygon(xq, yq, xv, yv)
+    # assert_same_array(_in, (M[[0, 0, 0, 0, 1, 0, 0, 1, 1, 0]]), ignore_bool=True)
+    # assert_same_array(on, (M[[0, 0, 0, 0, 0, 0, 0, 1, 1, 0]]), ignore_bool=True)
+
+    plot(
+        xv,
+        yv,
+        "k:",
+        xq(_in),
+        yq(_in),
+        "bo",
+        xq(on),
+        yq(on),
+        "r.",
+        xq(_not(_in)),
+        yq(_not(_in)),
+        "m+",
+    )
+    # shg()
 
 
 if __name__ == "__main__":
