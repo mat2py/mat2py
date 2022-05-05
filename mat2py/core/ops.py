@@ -26,7 +26,7 @@ __all__ = [
     "ge",
     "xor",
     "mldivide",
-    "_any",
+    "any",
     "transpose",
     "idivide",
     "lt",
@@ -51,7 +51,7 @@ __all__ = [
     "uniquetol",
     "punct",
     "times",
-    "_all",
+    "all",
     "relop",
     "_not",
     "vertcat",
@@ -210,7 +210,7 @@ def mldivide(a, b):
         return M[np.linalg.solve(a[1], b[1])]
 
 
-_any = mp_sum_like_decorators(default_if_empty=1)(np.any)
+any = mp_sum_like_decorators(default_if_empty=1)(np.any)
 
 
 def transpose(*args):
@@ -304,8 +304,7 @@ def times(*args):
     raise NotImplementedError("times")
 
 
-def _all(*args):
-    raise NotImplementedError("all")
+all = mp_sum_like_decorators(default_if_empty=1)(np.all)
 
 
 def relop(*args):

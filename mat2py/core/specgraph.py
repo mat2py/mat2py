@@ -85,7 +85,7 @@ __all__ = [
     "waterfall",
     "cylinder",
     "bar",
-    "_slice",
+    "slice",
     "histogram2",
     "streamribbon",
     "pcolor",
@@ -449,7 +449,7 @@ def bar(*args):
     raise NotImplementedError("bar")
 
 
-def _slice(*args):
+def slice(*args):
     raise NotImplementedError("slice")
 
 

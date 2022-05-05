@@ -64,7 +64,6 @@ def test_times():
 
 
 def test_any():
-    from mat2py.core.ops import _any
 
     A = M[
         [0, 1, 2],
@@ -74,22 +73,22 @@ def test_any():
     ]
 
     assert_same_array(
-        _any(A),
+        any(A),
         M[[1, 1, 1]],
         ignore_bool=True,
     )
     assert_same_array(
-        _any(A == 1),
+        any(A == 1),
         M[[0, 1, 0]],
         ignore_bool=True,
     )
     assert_same_array(
-        _any(A, "all"),
+        any(A, "all"),
         M[[1]],
         ignore_bool=True,
     )
     assert_same_array(
-        _any(A == 3, 2),
+        any(A == 3, 2),
         M[
             0,
             1,

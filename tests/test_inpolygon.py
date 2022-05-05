@@ -18,7 +18,7 @@ def inpolygon(x, y, xv, yv, nargout=None):
     x = x[I[:]].T
     y = y[I[:]].T
     mask = (((x >= min(xv)) & (x <= max(xv))) & (y >= min(yv))) & (y <= max(yv))
-    if _not(_any(mask)):
+    if _not(any(mask)):
         _in = zeros(inputSize) != 0
         on = copy(_in)
         return (_in, on)[:nargout]
@@ -104,7 +104,7 @@ def vec_inpolygon(Nv, x, y, xv, yv):
     nanidx = isnan(diffQuad)
     diffQuad[I[nanidx]] = 0
     _in = sum(diffQuad) != 0
-    on = _any((signCrossProduct == 0) & (dotProduct <= 0))
+    on = any((signCrossProduct == 0) & (dotProduct <= 0))
     _in = _in | on
     return _in, on
 
@@ -112,7 +112,7 @@ def vec_inpolygon(Nv, x, y, xv, yv):
 def close_loops(xv, yv):
     xnan = isnan(xv)
     ynan = isnan(yv)
-    if _not(_any(xnan | ynan)):
+    if _not(any(xnan | ynan)):
         nump = length(xv)
         if nump < 3:
             return
@@ -126,7 +126,7 @@ def close_loops(xv, yv):
                 yv(1),
             ]
     else:
-        if _any(xnan != ynan):
+        if any(xnan != ynan):
             error(message("MATLAB:inpolygon:InvalidLoopDef"))
         xnanShift = M[
             true,

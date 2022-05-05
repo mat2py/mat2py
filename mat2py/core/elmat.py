@@ -81,6 +81,7 @@ import functools
 
 from mat2py.common.backends import linalg as _linalg
 from mat2py.common.backends import numpy as np
+from mat2py.common.backends import py_all
 
 from ._internal.array import (
     M,
@@ -439,7 +440,7 @@ def isequal(*args):
             an, bn = map(mp_fieldnames_list, args)
             names = {*an, *bn}
             if len(an) == len(bn) and len(an) == len(names):
-                return all(isequal(a[n], b[n]) for n in names)
+                return py_all(isequal(a[n], b[n]) for n in names)
             return False
 
         if mp_can_cast_to_number(a):
@@ -454,7 +455,7 @@ def isequal(*args):
             return a.shape == b.shape and np.all(a == b)
         raise NotImplementedError
 
-    return all(isequal(i, j) for i, j in zip(args[:-1], args[1:]))
+    return py_all(isequal(i, j) for i, j in zip(args[:-1], args[1:]))
 
 
 toeplitz = mp_argout_wrapper_decorators()(_linalg.toeplitz)

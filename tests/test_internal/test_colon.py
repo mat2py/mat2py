@@ -3,20 +3,21 @@
 import numpy as np
 import pytest
 
+from mat2py.common.backends import py_slice
 from mat2py.core import *
 
 
 @pytest.mark.parametrize(
     ("args", "expected"),
     [
-        ((1, 10), slice(0, 10, 1)),
-        ((1, M[10]), slice(0, 10, 1)),
-        ((1, end), slice(0, 10, 1)),
-        ((1, M[end]), slice(0, 10, 1)),
-        ((1, 2, 10), slice(0, 10, 2)),
-        ((10, -2, 1), slice(9, None, -2)),
-        ((end, end / 2, end), slice(9, 10, 5)),
-        ((2, end / 2.6, end - 20), slice(1, 1, 4)),
+        ((1, 10), py_slice(0, 10, 1)),
+        ((1, M[10]), py_slice(0, 10, 1)),
+        ((1, end), py_slice(0, 10, 1)),
+        ((1, M[end]), py_slice(0, 10, 1)),
+        ((1, 2, 10), py_slice(0, 10, 2)),
+        ((10, -2, 1), py_slice(9, None, -2)),
+        ((end, end / 2, end), py_slice(9, 10, 5)),
+        ((2, end / 2.6, end - 20), py_slice(1, 1, 4)),
         ((1, 10), np.arange(1, 11)),
         ((1, 0.5, 10), np.arange(1, 10.1, 0.5)),
         ((10, -0.5, 1), np.arange(10, 0.9, -0.5)),
@@ -25,7 +26,7 @@ from mat2py.core import *
 )
 def test_colon(args, expected):
     length = 10
-    if isinstance(expected, slice):
+    if isinstance(expected, py_slice):
         assert colon(*args).to_index(length) == expected
     else:
         assert np.all(colon(*args).view(expected.dtype) == expected)
@@ -34,7 +35,7 @@ def test_colon(args, expected):
 def test_colon_attr():
     seq = colon(1, 10)
 
-    assert seq.to_index(10) == slice(0, 10, 1)
+    assert seq.to_index(10) == py_slice(0, 10, 1)
     assert seq[0, 1] == 2
     assert seq.size == 10
     assert seq.shape == (1, 10)
