@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from mat2py.common.backends import numpy as np
 
-from .array import M, MatArray, _convert_round, _convert_scalar, _convert_to_2d
+from .array import M, MatArray, mp_convert_round, mp_convert_scalar, mp_convert_to_2d
 from .cell import C, CellArray
 
 
@@ -18,7 +18,7 @@ class StructArray(Struct):
     pass
 
 
-def _fieldnames(a):
+def mp_fieldnames_list(a):
     assert isinstance(a, StructArray)
     return [i for i in a.__dict__.keys() if not i.startswith("__")]
 
@@ -26,7 +26,7 @@ def _fieldnames(a):
 def fieldnames(a, *args):
     if args:
         raise NotImplementedError("fieldnames")
-    return C.__class_getitem__(*_fieldnames(a))
+    return C.__class_getitem__(*mp_fieldnames_list(a))
 
 
 def struct(*args):

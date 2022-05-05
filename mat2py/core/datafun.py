@@ -53,15 +53,15 @@ import functools
 
 from mat2py.common.backends import numpy as np
 
-from ._internal.array import M, _convert_scalar
-from ._internal.math_helper import _max_like_decorators, _sum_like_decorators
+from ._internal.array import M, mp_convert_scalar
+from ._internal.math_helper import mp_max_like_decorators, mp_sum_like_decorators
 
-sum = _sum_like_decorators(default_if_empty=0)(np.sum)
-prod = _sum_like_decorators(default_if_empty=1)(np.prod)
-mean = _sum_like_decorators()(np.mean)
-median = _sum_like_decorators()(np.median)
-max = _max_like_decorators()(np.max, np.argmax, np.maximum)
-min = _max_like_decorators()(np.min, np.argmax, np.minimum)
+sum = mp_sum_like_decorators(default_if_empty=0)(np.sum)
+prod = mp_sum_like_decorators(default_if_empty=1)(np.prod)
+mean = mp_sum_like_decorators()(np.mean)
+median = mp_sum_like_decorators()(np.median)
+max = mp_max_like_decorators()(np.max, np.argmax, np.maximum)
+min = mp_max_like_decorators()(np.min, np.argmax, np.minimum)
 
 
 def mode(*args):
@@ -115,7 +115,7 @@ def sort(a, *args, nargout=1):
     if np.size(a) < 2:
         return a
     order = "ascend"
-    args = [_convert_scalar(i) for i in args]
+    args = [mp_convert_scalar(i) for i in args]
     if len(args) > 0 and isinstance(args[-1], str):
         order = args[-1]
         args = args[:-1]

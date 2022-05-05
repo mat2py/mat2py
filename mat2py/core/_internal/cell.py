@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from mat2py.common.backends import numpy as np
 
-from .array import M, MatArray, _convert_round, _convert_scalar, _convert_to_2d
+from .array import M, MatArray, mp_convert_round, mp_convert_scalar, mp_convert_to_2d
 
 
 class CellArray(MatArray):
@@ -38,7 +38,7 @@ class CellArray(MatArray):
             elif np.size(c) > 1:
                 # c(1:end) case
                 assert isinstance(value, CellArray)
-                value = _convert_to_2d(value.view(MatArray), c.shape)
+                value = mp_convert_to_2d(value.view(MatArray), c.shape)
                 assert value.shape == c.shape
                 super().__setitem__(key, value)
         return self
@@ -72,14 +72,14 @@ def cell(n, *args):
     if args:
         shape = (n, *args)
     else:
-        n = _convert_scalar(n)
+        n = mp_convert_scalar(n)
         if np.ndim(n) == 0:
             shape = (n, n)
         elif np.ndim(n) <= 2 and np.size(n) == np.shape(n)[-1]:
             shape = n.reshape(-1, order="F").tolist()
         else:
             raise ValueError("invalid shape")
-    shape = tuple(_convert_round(_convert_scalar(i)) for i in shape)
+    shape = tuple(mp_convert_round(mp_convert_scalar(i)) for i in shape)
     obj = np.array(
         [SimpleNamespace(obj=M[[]]) for _ in range(np.prod(shape))], dtype=object
     ).reshape(shape)

@@ -62,11 +62,11 @@ from mat2py.common.backends import numpy as np
 
 from ._internal.array import M, colon
 from ._internal.helper import (
-    argout_wrapper_decorators,
-    last_arg_as_kwarg,
-    nargout_from_stack,
+    mp_argout_wrapper_decorators,
+    mp_last_arg_as_kwarg,
+    mp_nargout_from_stack,
 )
-from ._internal.math_helper import _sum_like_decorators
+from ._internal.math_helper import mp_sum_like_decorators
 
 
 def uplus(*args):
@@ -77,7 +77,7 @@ def horzcat(*args):
     raise M[list(args)]
 
 
-@argout_wrapper_decorators()
+@mp_argout_wrapper_decorators()
 def mrdivide(b, a):
     r"""xA = B => x = B/A = (A'\B')'"""
     a, b = (
@@ -105,7 +105,7 @@ def gt(*args):
     raise NotImplementedError("gt")
 
 
-@argout_wrapper_decorators()
+@mp_argout_wrapper_decorators()
 def mtimes(a, b):
     return M[a] @ b
 
@@ -122,10 +122,10 @@ def arith(*args):
     raise NotImplementedError("arith")
 
 
-@last_arg_as_kwarg("row_as_one", ("rows",))
+@mp_last_arg_as_kwarg("row_as_one", ("rows",))
 def ismember(a, b, row_as_one=False, nargout=None):
     if nargout is None:
-        nargout = nargout_from_stack(3)
+        nargout = mp_nargout_from_stack(3)
 
     if row_as_one:
         raise NotImplementedError("ismember")
@@ -149,7 +149,7 @@ def bitcmp(*args):
     raise NotImplementedError("bitcmp")
 
 
-kron = argout_wrapper_decorators()(np.kron)
+kron = mp_argout_wrapper_decorators()(np.kron)
 
 
 def unique(x, *args, nargout=3):
@@ -198,7 +198,7 @@ def xor(*args):
     raise NotImplementedError("xor")
 
 
-@argout_wrapper_decorators()
+@mp_argout_wrapper_decorators()
 def mldivide(a, b):
     r"""Ax = B => x = A\B"""
     a, b = (
@@ -210,7 +210,7 @@ def mldivide(a, b):
         return M[np.linalg.solve(a[1], b[1])]
 
 
-_any = _sum_like_decorators(default_if_empty=1)(np.any)
+_any = mp_sum_like_decorators(default_if_empty=1)(np.any)
 
 
 def transpose(*args):

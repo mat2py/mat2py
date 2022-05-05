@@ -9,16 +9,16 @@ __all__ = [
 
 from mat2py.common.backends import numpy as np
 
-from ._internal.helper import argout_wrapper_decorators
-from ._internal.math_helper import _rand_like_decorators
+from ._internal.helper import mp_argout_wrapper_decorators
+from ._internal.math_helper import mp_rand_like_decorators
 
 
 def randperm(*args):
     raise NotImplementedError("randperm")
 
 
-rand = _rand_like_decorators()(np.random.rand)
-randn = _rand_like_decorators()(np.random.randn)
+rand = mp_rand_like_decorators()(np.random.rand)
+randn = mp_rand_like_decorators()(np.random.randn)
 
 
 def rng(*args):

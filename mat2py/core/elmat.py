@@ -84,20 +84,20 @@ from mat2py.common.backends import numpy as np
 
 from ._internal.array import (
     M,
-    _can_cast_to_number,
-    _convert_round,
-    _convert_scalar,
     ind2sub,
+    mp_can_cast_to_number,
+    mp_convert_round,
+    mp_convert_scalar,
 )
 from ._internal.cell import CellArray
 from ._internal.helper import (
-    argout_wrapper_decorators,
-    last_arg_as_kwarg,
-    nargout_from_stack,
-    special_variables,
+    mp_argout_wrapper_decorators,
+    mp_last_arg_as_kwarg,
+    mp_nargout_from_stack,
+    mp_special_variables,
 )
-from ._internal.math_helper import _zeros_like_decorators
-from ._internal.struct import StructArray, _fieldnames
+from ._internal.math_helper import mp_zeros_like_decorators
+from ._internal.struct import StructArray, mp_fieldnames_list
 
 
 def realmin(*args):
@@ -114,7 +114,7 @@ def reshape(x, *args):
     raise NotImplementedError("reshape")
 
 
-nan = special_variables(np.nan)
+nan = mp_special_variables(np.nan)
 NaN = nan
 
 
@@ -136,10 +136,10 @@ def gallery(*args):
     raise NotImplementedError("gallery")
 
 
-eye = _zeros_like_decorators(expand_shape=True)(np.eye)
+eye = mp_zeros_like_decorators(expand_shape=True)(np.eye)
 
 
-i = special_variables(1j)
+i = mp_special_variables(1j)
 
 
 def isinf(*args):
@@ -207,7 +207,7 @@ def numel(a):
     return np.size(a)
 
 
-j = special_variables(1j)
+j = mp_special_variables(1j)
 
 
 def ndgrid(*nd):
@@ -242,7 +242,7 @@ def freqspace(*args):
     raise NotImplementedError("freqspace")
 
 
-true = special_variables(True)
+true = mp_special_variables(True)
 
 
 def pascal(*args):
@@ -267,7 +267,7 @@ def isrow(*args):
 
 def meshgrid(x, *args, nargout=None):
     if nargout is None:
-        nargout = nargout_from_stack()
+        nargout = mp_nargout_from_stack()
 
     if nargout != 1 + len(args):
         assert len(args) == 0
@@ -276,7 +276,7 @@ def meshgrid(x, *args, nargout=None):
     return tuple(M[i] for i in np.meshgrid(x, *args))
 
 
-eps = special_variables(np.finfo(float).eps)
+eps = mp_special_variables(np.finfo(float).eps)
 
 
 def compan(*args):
@@ -287,7 +287,7 @@ def permute(*args):
     raise NotImplementedError("permute")
 
 
-pi = special_variables(np.pi)
+pi = mp_special_variables(np.pi)
 
 
 def size(a):
@@ -307,14 +307,14 @@ def realmax(*args):
     raise NotImplementedError("realmax")
 
 
-false = special_variables(False)
+false = mp_special_variables(False)
 
 
 def flip(*args):
     raise NotImplementedError("flip")
 
 
-zeros = _zeros_like_decorators()(np.zeros)
+zeros = mp_zeros_like_decorators()(np.zeros)
 
 
 def shiftdim(*args):
@@ -357,17 +357,17 @@ def blkdiag(*args):
     raise NotImplementedError("blkdiag")
 
 
-ones = _zeros_like_decorators()(np.ones)
+ones = mp_zeros_like_decorators()(np.ones)
 
 
-inf = special_variables(np.inf)
+inf = mp_special_variables(np.inf)
 Inf = inf
 
 
-@last_arg_as_kwarg("direction", ("first", "last"))
+@mp_last_arg_as_kwarg("direction", ("first", "last"))
 def find(x, *args, direction="first", nargout=None):
     if nargout is None:
-        nargout = nargout_from_stack(3)
+        nargout = mp_nargout_from_stack(3)
 
     if len(args) == 0:
         if nargout == 2:
@@ -385,7 +385,7 @@ def find(x, *args, direction="first", nargout=None):
             return M[np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)]
 
     assert len(args) == 1
-    n = _convert_scalar(_convert_round(args[0]))
+    n = mp_convert_scalar(mp_convert_round(args[0]))
     assert n > 0
     # TODO: improve this slow implementation
     res = find(x, nargout=nargout)
@@ -411,7 +411,7 @@ def isequalwithequalnans(*args):
     raise NotImplementedError("isequalwithequalnans")
 
 
-@argout_wrapper_decorators()
+@mp_argout_wrapper_decorators()
 def linspace(*args):
     return np.linspace(*args)
 
@@ -436,14 +436,14 @@ def isequal(*args):
         if isinstance(a, StructArray):
             if not isinstance(b, StructArray):
                 return False
-            an, bn = map(_fieldnames, args)
+            an, bn = map(mp_fieldnames_list, args)
             names = {*an, *bn}
             if len(an) == len(bn) and len(an) == len(names):
                 return all(isequal(a[n], b[n]) for n in names)
             return False
 
-        if _can_cast_to_number(a):
-            if not _can_cast_to_number(b):
+        if mp_can_cast_to_number(a):
+            if not mp_can_cast_to_number(b):
                 return False
             a = M[a]
             b = M[b]
@@ -457,4 +457,4 @@ def isequal(*args):
     return all(isequal(i, j) for i, j in zip(args[:-1], args[1:]))
 
 
-toeplitz = argout_wrapper_decorators()(_linalg.toeplitz)
+toeplitz = mp_argout_wrapper_decorators()(_linalg.toeplitz)

@@ -76,10 +76,10 @@ __all__ = [
 from mat2py.common.backends import numpy as np
 
 from ._internal.array import M
-from ._internal.helper import argout_wrapper_decorators
+from ._internal.helper import mp_argout_wrapper_decorators
 
 (exp, real, imag, abs, angle, conj, sin, cos, sinh, cosh, tan, tanh, sqrt) = (
-    argout_wrapper_decorators()(f)
+    mp_argout_wrapper_decorators()(f)
     for f in (
         np.exp,
         np.real,

@@ -1,6 +1,6 @@
 # type: ignore
 
-from mat2py.core._internal.helper import nargout_from_stack
+from mat2py.core._internal.helper import mp_nargout_from_stack
 
 from .helper import *
 
@@ -8,7 +8,7 @@ from .helper import *
 def inpolygon(x, y, xv, yv, nargout=None):
     on = M[[]]
     if nargout is None:
-        nargout = nargout_from_stack()
+        nargout = mp_nargout_from_stack()
 
     if (_not(isvector(xv))) or (_not(isvector(yv))):
         error(message("MATLAB:inpolygon:PolygonVecDef"))

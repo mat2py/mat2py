@@ -68,7 +68,7 @@ from mat2py.common.backends import numpy as np
 
 from ._internal.array import I, M, end
 from ._internal.cell import C
-from ._internal.helper import argout_wrapper_decorators, special_variables
+from ._internal.helper import mp_argout_wrapper_decorators, mp_special_variables
 
 
 def copy(x):
@@ -172,7 +172,7 @@ def details(*args):
     raise NotImplementedError("details")
 
 
-ans = special_variables(None)
+ans = mp_special_variables(None)
 
 
 def validateattributes(*args):

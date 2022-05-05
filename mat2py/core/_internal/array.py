@@ -73,12 +73,12 @@ class End:
 end = End()
 
 
-def _can_cast_to_number(x):
+def mp_can_cast_to_number(x):
     dtype = M[x].dtype
     return np.issubdtype(dtype, np.number) or np.issubdtype(dtype, np.bool_)
 
 
-def _convert_scalar(x):
+def mp_convert_scalar(x):
     if isinstance(x, np.ndarray) and x.size == 1:
         return x.reshape(-1)[0]
     elif isinstance(x, MatCreator):
@@ -87,7 +87,7 @@ def _convert_scalar(x):
         return x
 
 
-def _convert_round(x):
+def mp_convert_round(x):
     if isinstance(x, np.ndarray) and np.issubdtype(x.dtype, np.integer):
         return x
     else:
@@ -123,7 +123,7 @@ class MatIndex:
 
         if not isinstance(item, np.ndarray):
             item = np.array(item)
-        return item if np.issubdtype(item.dtype, bool) else _convert_round(item - 1)
+        return item if np.issubdtype(item.dtype, bool) else mp_convert_round(item - 1)
 
     def __call__(self, shape: Tuple[int]):
         item = self.item if isinstance(self.item, tuple) else (self.item,)
@@ -186,7 +186,7 @@ def ind2sub(shape: tuple, index: (typing.Iterable[int], int, slice)):
         raise NotImplementedError
 
 
-def _estimate_size(shape_or_array, item):
+def mp_estimate_size(shape_or_array, item):
     if isinstance(shape_or_array, np.ndarray):
         return shape_or_array[item].shape
 
@@ -226,7 +226,7 @@ def _estimate_size(shape_or_array, item):
     return tuple(calc_length(i, s) for i, s in zip_longest(item, shape, fillvalue=1))
 
 
-def _convert_to_2d(vec, shape):
+def mp_convert_to_2d(vec, shape):
     if isinstance(vec, np.ndarray) and np.size(vec) == np.max(np.shape(vec)):
         return vec.reshape(shape)
     else:
@@ -256,11 +256,11 @@ class MatArray(np.ndarray):
         if isinstance(value, Colon):
             value = value.view(MatArray)
 
-        target_shape = _estimate_size(self, key)
+        target_shape = mp_estimate_size(self, key)
         if np.prod(target_shape) == 0:
             return self
 
-        return super().__setitem__(key, _convert_to_2d(value, target_shape))
+        return super().__setitem__(key, mp_convert_to_2d(value, target_shape))
 
     def __iter__(self):
         m = self.reshape(1, -1) if self.ndim < 2 else self
@@ -297,7 +297,7 @@ class MatArray(np.ndarray):
             return np.dot(a[1].view(np.ndarray), b[1].view(np.ndarray)).view(MatArray)
 
 
-def _contains_end(item):
+def mp_contains_end(item):
     if isinstance(item, (End, MatCreator)):
         return True
     elif isinstance(item, slice):
@@ -360,7 +360,7 @@ class MatCreator(object):
                 return args.view(MatArray)
 
         contains_end = any(
-            _contains_end(i)
+            mp_contains_end(i)
             for i in chain.from_iterable(
                 (row if isinstance(row, tuple) else (row,))
                 for row in (args if isinstance(args, (tuple, list)) else (args,))
@@ -465,7 +465,7 @@ class Colon(MatArray, metaclass=ColonMeta):
     ):
         assert start is not None and stop is not None
         slice_expr = tuple(
-            _convert_scalar(s)
+            mp_convert_scalar(s)
             for s in (  # in (start, stop, step) order
                 start,
                 stop,
@@ -525,7 +525,7 @@ class Colon(MatArray, metaclass=ColonMeta):
                 for expr in self._slice_expr
             )
 
-        start, stop, step = map(_convert_scalar, _slice_expr)
+        start, stop, step = map(mp_convert_scalar, _slice_expr)
 
         if eps is None:
             eps = (

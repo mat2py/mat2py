@@ -40,7 +40,7 @@ from time import time as _time
 from mat2py.common.backends import numpy as np
 
 from ._internal.array import M
-from ._internal.helper import argout_wrapper_decorators
+from ._internal.helper import mp_argout_wrapper_decorators
 
 
 def timezones(*args):

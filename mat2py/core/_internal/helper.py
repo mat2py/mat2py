@@ -9,7 +9,7 @@ from .array import M
 
 
 @functools.lru_cache(maxsize=10)
-def last_arg_as_kwarg(key: str, value_map: (tuple, dict)):
+def mp_last_arg_as_kwarg(key: str, value_map: (tuple, dict)):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -28,7 +28,7 @@ def last_arg_as_kwarg(key: str, value_map: (tuple, dict)):
 
 
 @functools.lru_cache(maxsize=10)
-def argout_wrapper_decorators(nargout: int = 1):
+def mp_argout_wrapper_decorators(nargout: int = 1):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -44,12 +44,12 @@ def argout_wrapper_decorators(nargout: int = 1):
     return decorator
 
 
-def special_variables(value: float, name: str = ""):
+def mp_special_variables(value: float, name: str = ""):
     return value
 
 
 @functools.lru_cache(maxsize=50)
-def nargout_from_ast(s: str, func_name: str, co_filename=None, f_lineno=None):
+def mp_nargout_from_ast(s: str, func_name: str, co_filename=None, f_lineno=None):
     try:
         if s is None:
             raise SyntaxError
@@ -74,12 +74,12 @@ def nargout_from_ast(s: str, func_name: str, co_filename=None, f_lineno=None):
         return 1
 
 
-def nargout_from_stack(caller_level: int = 2):
+def mp_nargout_from_stack(caller_level: int = 2):
     try:
         current, *_, caller = stack()[1 : (caller_level + 1)]
         frame = caller.frame
         code_context = "\n".join(caller.code_context).strip()
-        return nargout_from_ast(
+        return mp_nargout_from_ast(
             code_context
             if re.match(r'[^\'"]+\s*=\s*' + current.function, code_context)
             else None,

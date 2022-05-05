@@ -102,9 +102,9 @@ import scipy.io
 
 from mat2py.common.backends import numpy as np
 
-from ._internal.array import M, _convert_scalar
+from ._internal.array import M, mp_convert_scalar
 from ._internal.cell import cell
-from ._internal.helper import argout_wrapper_decorators
+from ._internal.helper import mp_argout_wrapper_decorators
 
 
 def setmcruserdata(*args):
@@ -446,9 +446,9 @@ def load(path, *args):
             elif np.issubdtype(obj.dtype, np.complexfloating):
                 new_dtype = np.complex_
             if np.dtype(new_dtype).itemsize > np.dtype(obj.dtype).itemsize:
-                return _convert_scalar(M[obj.astype(new_dtype)])
+                return mp_convert_scalar(M[obj.astype(new_dtype)])
             else:
-                return _convert_scalar(M[obj])
+                return mp_convert_scalar(M[obj])
         else:
             return obj
 
