@@ -1,4 +1,12 @@
 # type: ignore
+__all__ = [
+    "randperm",
+    "rand",
+    "randn",
+    "rng",
+    "randi",
+]
+
 from mat2py.common.backends import numpy as np
 
 from ._internal.helper import argout_wrapper_decorators

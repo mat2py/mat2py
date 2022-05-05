@@ -1,5 +1,23 @@
 # type: ignore
 
+__all__ = [
+    "javaAddLsnrsToFigure",
+    "plotbrowser",
+    "adddatadlg",
+    "makedisplaynames",
+    "plottoolfunc",
+    "enableplottoolbuttons",
+    "propertyeditor",
+    "showplottool",
+    "getplotbrowserproptable",
+    "plottools",
+    "figurepalette",
+    "javaGetHandles",
+    "getplottool",
+    "getfigurefordesktopclient",
+    "addsubplot",
+]
+
 
 def javaAddLsnrsToFigure(*args):
     raise NotImplementedError("javaAddLsnrsToFigure")

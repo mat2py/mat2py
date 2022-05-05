@@ -1,5 +1,22 @@
 # type: ignore
 
+__all__ = [
+    "cmopts",
+    "checkinwin",
+    "clearcase",
+    "checkout",
+    "cvs",
+    "cleanupcomment",
+    "undocheckout",
+    "reloadsys",
+    "checkin",
+    "pvcs",
+    "customverctrl",
+    "checkoutwin",
+    "issourcecontrolconfigured",
+    "rcs",
+]
+
 
 def cmopts(*args):
     raise NotImplementedError("cmopts")

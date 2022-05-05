@@ -1,4 +1,69 @@
 # type: ignore
+
+__all__ = [
+    "end",
+    "copy",
+    "doclink",
+    "eval",
+    "online_concatenator",
+    "display",
+    "munlock",
+    "warning",
+    "localfunctions",
+    "nargin",
+    "assignin",
+    "genvarname",
+    "precedence",
+    "handle",
+    "keyboard",
+    "spmd_feval",
+    "lastwarn",
+    "isvarname",
+    "inputname",
+    "iskeyword",
+    "run",
+    "reverse_binary_operator",
+    "javachk",
+    "nargout",
+    "parfor_range_check",
+    "details",
+    "ans",
+    "validateattributes",
+    "_assert",
+    "disp",
+    "varargout",
+    "parallel_function",
+    "input",
+    "isglobal",
+    "evalin",
+    "mlock",
+    "error",
+    "rethrow",
+    "validatestring",
+    "parfor_sliced_fcnhdl_check",
+    "exist",
+    "ParallelException",
+    "checkSyntacticWarnings",
+    "parfor_endpoint_check",
+    "builtin",
+    "consume_assign",
+    "evalc",
+    "lasterr",
+    "varargin",
+    "script",
+    "nargchk",
+    "nargoutchk",
+    "feval",
+    "narginchk",
+    "lasterror",
+    "mislocked",
+    "mfilename",
+    "message",
+    "parfor_M_check",
+    "lists",
+]
+
+
 from mat2py.common.backends import numpy as np
 
 from ._internal.array import I, M, end
@@ -15,7 +80,7 @@ def doclink(*args):
     raise NotImplementedError("doclink")
 
 
-def _eval(*args):
+def eval(*args):
     raise NotImplementedError("eval")
 
 

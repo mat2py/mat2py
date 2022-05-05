@@ -1,5 +1,27 @@
 # type: ignore
 
+__all__ = [
+    "callAllOptimOutputFcns",
+    "createSolverStruct",
+    "optimplotfunccount",
+    "separateOptimStruct",
+    "fminbnd",
+    "validOptimProblemStruct",
+    "lsqnonneg",
+    "createCellArrayOfFunctions",
+    "optimplotx",
+    "validateopts_UseParallel",
+    "fzero",
+    "snlsFixedVarWrapOutputAndPlotFcns",
+    "optimplotfval",
+    "snlsFixedVarEvalOutputOrPlotFcn",
+    "fminsearch",
+    "optimset",
+    "callAllOptimPlotFcns",
+    "createProblemStruct",
+    "optimget",
+]
+
 
 def callAllOptimOutputFcns(*args):
     raise NotImplementedError("callAllOptimOutputFcns")

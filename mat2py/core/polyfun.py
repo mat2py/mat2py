@@ -1,5 +1,46 @@
 # type: ignore
 
+__all__ = [
+    "unmkpp",
+    "xyzchk",
+    "griddata",
+    "interp1",
+    "roots",
+    "poly",
+    "splncore",
+    "griddatan",
+    "tsearchn",
+    "convhulln",
+    "interp2",
+    "interp1q",
+    "delaunayn",
+    "rectint",
+    "polyarea",
+    "pchip",
+    "ppval",
+    "polyval",
+    "interp3",
+    "polyvalm",
+    "interpft",
+    "voronoin",
+    "delaunay",
+    "spline",
+    "boundary",
+    "qhull",
+    "automesh",
+    "pwch",
+    "dsearchn",
+    "xyzvchk",
+    "inpolygon",
+    "mkpp",
+    "polyfit",
+    "polyder",
+    "interpn",
+    "polyint",
+    "convhull",
+    "xychk",
+]
+
 
 def unmkpp(*args):
     raise NotImplementedError("unmkpp")

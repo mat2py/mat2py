@@ -1,9 +1,8 @@
 # type: ignore
 
-import mat2py as mp
-from mat2py.core import *
-from mat2py.core.ops import _any, _not
-from tests.helper import assert_same_array
+from mat2py.core._internal.helper import nargout_from_stack
+
+from .helper import *
 
 
 def inpolygon(x, y, xv, yv, nargout=None):

@@ -1,8 +1,6 @@
 # type: ignore
 import pytest
 
-from mat2py.core import *
-
 from .helper import *
 
 

@@ -1,5 +1,11 @@
 # type: ignore
 
+__all__ = [
+    "linkplotfunc",
+    "brush",
+    "linkdata",
+]
+
 
 def linkplotfunc(*args):
     raise NotImplementedError("linkplotfunc")

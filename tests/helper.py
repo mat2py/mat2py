@@ -1,6 +1,15 @@
 # type: ignore
 import pytest
 
+from mat2py import core as _core
+
+__all__ = [
+    *_core.__all__,
+    "np",
+    "assert_same_array",
+]
+
+from mat2py.common.backends import numpy as np
 from mat2py.core import *
 
 

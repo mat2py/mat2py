@@ -1,5 +1,32 @@
 # type: ignore
 
+__all__ = [
+    "lin2mu",
+    "wavfinfo",
+    "avifinfo",
+    "audiorecorderreg",
+    "mu2lin",
+    "wavread",
+    "soundsc",
+    "audiowrite",
+    "prefspanel",
+    "audiouniquename",
+    "wavwrite",
+    "sound",
+    "aufinfo",
+    "aviinfo",
+    "auread",
+    "audioplayerreg",
+    "avgate",
+    "auwrite",
+    "audioread",
+    "audiodevinfo",
+    "mmcompinfo",
+    "mmfileinfo",
+    "movie2avi",
+    "audioinfo",
+]
+
 
 def lin2mu(*args):
     raise NotImplementedError("lin2mu")

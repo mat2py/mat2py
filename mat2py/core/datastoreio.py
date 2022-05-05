@@ -1,5 +1,10 @@
 # type: ignore
 
+__all__ = [
+    "readDatastoreImage",
+    "datastore",
+]
+
 
 def readDatastoreImage(*args):
     raise NotImplementedError("readDatastoreImage")

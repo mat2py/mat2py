@@ -1,5 +1,23 @@
 # type: ignore
 
+__all__ = [
+    "legendinfo",
+    "invalidateaxis",
+    "hgconvertunits",
+    "scribecursors",
+    "colorbar",
+    "startscribeobject",
+    "graph2dhelper",
+    "getselectobjects",
+    "legendcolorbarlayout",
+    "deselectall",
+    "selectobject",
+    "scribealign",
+    "startscribepinning",
+    "legend",
+    "snaptogrid",
+]
+
 
 def legendinfo(*args):
     raise NotImplementedError("legendinfo")

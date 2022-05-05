@@ -1,5 +1,15 @@
 # type: ignore
 
+__all__ = [
+    "hdsGetSize",
+    "hdsCatArray",
+    "hdsNewArray",
+    "hdsReplicateArray",
+    "hdsGetSlice",
+    "hdsReshapeArray",
+    "hdsSetSlice",
+]
+
 
 def hdsGetSize(*args):
     raise NotImplementedError("hdsGetSize")

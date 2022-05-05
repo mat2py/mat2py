@@ -1,5 +1,34 @@
 # type: ignore
 
+__all__ = [
+    "demos",
+    "whatsnew",
+    "showdemo",
+    "indexhelper",
+    "docroot",
+    "builddocsearchdb",
+    "helpdesk",
+    "helpbrowser",
+    "info",
+    "helpwin",
+    "support",
+    "web",
+    "playshow",
+    "echodemo",
+    "playbackdemo",
+    "lookfor",
+    "help",
+    "demowin",
+    "helpPopup",
+    "docsearch",
+    "displayEndOfDemoMessage",
+    "demo",
+    "doc",
+    "helpview",
+    "help2html",
+    "docpath",
+]
+
 
 def demos(*args):
     raise NotImplementedError("demos")

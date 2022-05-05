@@ -1,5 +1,17 @@
 # type: ignore
 
+__all__ = [
+    "menueditfunc",
+    "guidemfile",
+    "gui_mainfcn",
+    "guidefunc",
+    "actxproxy",
+    "guidetemplate",
+    "guidetoolfunc",
+    "guide",
+    "guideopts",
+]
+
 
 def menueditfunc(*args):
     raise NotImplementedError("menueditfunc")

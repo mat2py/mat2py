@@ -1,5 +1,34 @@
 # type: ignore
 
+__all__ = [
+    "ddeunadv",
+    "eventlisteners",
+    "sampev",
+    "regmatlabserver",
+    "ddereq",
+    "ddepoke",
+    "winqueryreg",
+    "ddeadv",
+    "changeNotificationAdvanced",
+    "registerevent",
+    "unregisterallevents",
+    "unregisterevent",
+    "actxcontrolcreateproperty",
+    "ddeexec",
+    "mwsamp",
+    "actxGetRunningServer",
+    "actxcontrolselect",
+    "changeNotification",
+    "ddeterm",
+    "actxcontrollist",
+    "actxserver",
+    "enableservice",
+    "writeactxlicense",
+    "ddeinit",
+    "winopen",
+    "isevent",
+]
+
 
 def ddeunadv(*args):
     raise NotImplementedError("ddeunadv")
