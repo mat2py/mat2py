@@ -28,6 +28,10 @@ def test_find():
     assert_same_array(r, M[1, 1, 2, 1, 2])
     assert_same_array(c, M[1, 2, 2, 3, 3])
 
+    r, c = find(M[[-1, 0, 1]])
+    assert_same_array(r, M[[1, 1]])
+    assert_same_array(c, M[[1, 3]])
+
     X = M[
         [0, 0, 3, 13],
         [5, 11, 10, 8],

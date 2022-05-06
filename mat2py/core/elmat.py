@@ -93,7 +93,9 @@ from ._internal.array import (
 from ._internal.cell import CellArray
 from ._internal.helper import (
     mp_argout_wrapper_decorators,
+    mp_inference_nargout_decorators,
     mp_last_arg_as_kwarg,
+    mp_match_vector_direction,
     mp_nargout_from_stack,
     mp_special_variables,
 )
@@ -291,13 +293,25 @@ def permute(*args):
 pi = mp_special_variables(np.pi)
 
 
-def size(a):
+@mp_inference_nargout_decorators()
+def size(a, *args, nargout=None):
+    if args:
+        (d,) = args
+        d = mp_convert_scalar(mp_convert_round(d))
+        assert d > 0
+        return (np.shape(a)[d - 1],)
     shape = list(np.shape(a))
-    if len(shape) == 0:
-        return M[[1, 1]]
-    if len(shape) == 1:
-        return M[[1, shape[0]]]
-    return M[shape]
+    if nargout == 1:
+        if len(shape) == 0:
+            return (M[[1, 1]],)
+        if len(shape) == 1:
+            return (M[[1, shape[0]]],)
+        return (M[shape],)
+    if nargout < len(shape):
+        shape = [*shape[:nargout], np.prod(shape[nargout:])]
+    elif nargout > len(shape):
+        shape = [*shape, *([1] * (nargout - len(shape)))]
+    return tuple(shape)
 
 
 def invhilb(*args):
@@ -365,10 +379,11 @@ inf = mp_special_variables(np.inf)
 Inf = inf
 
 
+@mp_match_vector_direction()
 @mp_last_arg_as_kwarg("direction", ("first", "last"))
 def find(x, *args, direction="first", nargout=None):
     if nargout is None:
-        nargout = mp_nargout_from_stack(3)
+        nargout = mp_nargout_from_stack(4)
 
     if len(args) == 0:
         if nargout == 2:

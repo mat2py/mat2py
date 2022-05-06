@@ -41,6 +41,11 @@ __all__ = [
     "xychk",
 ]
 
+from mat2py.core._internal.helper import (
+    mp_inference_nargout_decorators,
+    mp_nargout_from_stack,
+)
+
 
 def unmkpp(*args):
     raise NotImplementedError("unmkpp")
@@ -162,8 +167,11 @@ def xyzvchk(*args):
     raise NotImplementedError("xyzvchk")
 
 
-def inpolygon(*args):
-    raise NotImplementedError("inpolygon")
+@mp_inference_nargout_decorators()
+def inpolygon(*args, nargout=None, **kwargs):
+    from mat2py.toolbox.matlab.polyfun.inpolygon import inpolygon as _inpolygon
+
+    return _inpolygon(*args, **kwargs, nargout=nargout)
 
 
 def mkpp(*args):

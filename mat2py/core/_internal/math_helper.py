@@ -4,7 +4,11 @@ import functools
 from mat2py.common.backends import numpy as np
 
 from .array import M, mp_convert_round, mp_convert_scalar
-from .helper import mp_last_arg_as_kwarg, mp_nargout_from_stack
+from .helper import (
+    mp_inference_nargout_decorators,
+    mp_last_arg_as_kwarg,
+    mp_nargout_from_stack,
+)
 
 
 @functools.lru_cache(maxsize=10)
@@ -36,23 +40,28 @@ def mp_sum_like_decorators(default_if_empty=None):
 
 @functools.lru_cache(maxsize=10)
 def mp_max_like_decorators():
-    def decorator(func, argfunc, pfunc):
+    def decorator(func, argfunc, pfunc, nanfunc):
         @functools.wraps(func)
-        def wrapper(*args, nargout=None):
-            if nargout is None:
-                nargout = mp_nargout_from_stack()
+        @mp_inference_nargout_decorators()
+        @mp_last_arg_as_kwarg("nanflag", ("omitnan", "includenan"))
+        def wrapper(*args, nanflag="omitnan", nargout=None):
             if nargout == 2:
                 # argfunc(*args)
                 raise NotImplementedError
 
+            assert nargout == 1
             if (len(args) == 1) or (
                 len(args) > 1
                 and isinstance(args[1], np.ndarray)
                 and np.size(args[1]) == 0
             ):
-                return mp_sum_like_decorators()(func)(args[0], *args[2:])
+                return (
+                    mp_sum_like_decorators()(nanfunc if nanflag == "omitnan" else func)(
+                        args[0], *args[2:]
+                    ),
+                )
             else:
-                return M[pfunc(*args)]
+                return (M[pfunc(*args)],)
 
         return wrapper
 

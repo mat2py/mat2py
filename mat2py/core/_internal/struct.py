@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from mat2py.common.backends import numpy as np
 
-from .array import M, MatArray, mp_convert_round, mp_convert_scalar, mp_convert_to_2d
+from .array import M, MatArray, mp_convert_round, mp_convert_scalar, mp_try_match_shape
 from .cell import C, CellArray
 
 

@@ -73,6 +73,14 @@ class End:
 end = End()
 
 
+def mp_detect_vector(x):
+    if not isinstance(x, np.ndarray) or x.ndim > 2:
+        return 0
+    if x.ndim == 2 and x.shape[1] == 1:
+        return -1
+    return 0 if x.ndim == 2 and x.shape[0] > 1 else 1
+
+
 def mp_can_cast_to_number(x):
     dtype = M[x].dtype
     return np.issubdtype(dtype, np.number) or np.issubdtype(dtype, np.bool_)
@@ -104,6 +112,14 @@ class MatIndex:
     def __init__(self, index):
         if self is not index:
             self.item = index
+
+    def is_pure_colon(self):
+        return (
+            isinstance(self.item, slice)
+            and self.item.start is None
+            and self.item.step is None
+            and self.item.stop is None
+        )
 
     @staticmethod
     def __evaluate__(
@@ -226,9 +242,16 @@ def mp_estimate_size(shape_or_array, item):
     return tuple(calc_length(i, s) for i, s in zip_longest(item, shape, fillvalue=1))
 
 
-def mp_convert_to_2d(vec, shape):
-    if isinstance(vec, np.ndarray) and np.size(vec) == np.max(np.shape(vec)):
-        return vec.reshape(shape)
+def mp_try_match_shape(vec, shape):
+    if (
+        isinstance(vec, np.ndarray)
+        and vec.shape != shape
+        and (
+            np.size(vec) == np.max(np.shape(vec))
+            or (isinstance(shape, tuple) and len(shape) == 1)
+        )
+    ):
+        return vec.reshape(shape, order="F")
     else:
         return vec
 
@@ -239,12 +262,17 @@ class MatArray(np.ndarray):
     def __call__(self, item, *rest_item):
         # TODO: we can not differicate `a(1)` and `a(1,)` while `a[1]` and `a[1,]` have difference
         item = (item, *rest_item) if rest_item else item
+        if isinstance(item, MatIndex) and item.is_pure_colon():
+            # Should not reach here normally
+            return super().reshape((-1, 1), order="F")
         return super().__getitem__(MatIndex(item)(self.shape))
 
     def __getitem__(self, item) -> "MatArray":
         if isinstance(item, End):
             item = MatIndex(item)
         if isinstance(item, MatIndex):
+            if item.is_pure_colon():
+                return super().reshape((-1, 1), order="F")
             item = item(self.shape)
         return super().__getitem__(item)
 
@@ -260,7 +288,7 @@ class MatArray(np.ndarray):
         if np.prod(target_shape) == 0:
             return self
 
-        return super().__setitem__(key, mp_convert_to_2d(value, target_shape))
+        return super().__setitem__(key, mp_try_match_shape(value, target_shape))
 
     def __iter__(self):
         m = self.reshape(1, -1) if self.ndim < 2 else self

@@ -45,6 +45,9 @@ __all__ = [
     "moveaxis",
     "getorcreateobj",
 ]
+from mat2py.common.backends import numpy as np
+
+from ._internal import M
 
 
 def plotyy(*args):
@@ -162,6 +165,9 @@ def plot(*args):
             style = (style,)
         else:
             style = tuple()
+        x = M[x].reshape(-1)
+        y = M[y].reshape(-1)
+
         ax.plot(x, y, *style)
     return fig
 

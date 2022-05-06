@@ -48,6 +48,10 @@ def test_array():
     assert np.allclose(d2[I[:, d2.sum(0) > 20]], np.array([[6, 9], [7, 10], [8, 11]]))
     assert np.allclose(d2[I[d2 > 7]], np.array([8, 9, 10, 11]))
 
+    d2[I[:]] = reshape(M[1:12], 3, 4)
+    assert np.all(size(d2[I[:]]) == M[[12, 1]])
+    assert np.all(d2[I[:]] == M[1:12].T)
+
     assert M[1].shape == (1, 1)
     assert np.allclose(M[[]], np.array([]))
     assert np.allclose(M[1, 2], np.array([1, 2]).reshape(-1, 1))

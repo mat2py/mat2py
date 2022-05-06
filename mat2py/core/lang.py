@@ -64,6 +64,8 @@ __all__ = [
 ]
 
 
+from copy import deepcopy
+
 from mat2py.common.backends import numpy as np
 
 from ._internal.array import I, M, end
@@ -73,7 +75,7 @@ from ._internal.helper import mp_argout_wrapper_decorators, mp_special_variables
 
 def copy(x):
     # ToDo: we should do copy-on-write
-    return x
+    return deepcopy(x)
 
 
 def doclink(*args):
@@ -179,8 +181,13 @@ def validateattributes(*args):
     raise NotImplementedError("validateattributes")
 
 
-def _assert(*args):
-    raise NotImplementedError("_assert")
+def _assert(cond, *args):
+    if args:
+        msg, *args = args
+        if args:
+            raise NotImplementedError("_assert")
+        assert cond, msg
+    assert cond
 
 
 def disp(*args):

@@ -5,7 +5,9 @@ import re
 from inspect import stack
 from pathlib import Path
 
-from .array import M
+from mat2py.common.backends import numpy as np
+
+from .array import M, mp_detect_vector
 
 
 @functools.lru_cache(maxsize=10)
@@ -21,6 +23,43 @@ def mp_last_arg_as_kwarg(key: str, value_map: (tuple, dict)):
                 kwargs = {**kwargs, key: value}
                 args = args[:-1]
             return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+@functools.lru_cache(maxsize=10)
+def mp_match_vector_direction(match_arg_position=0, target_arg_position: tuple = None):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            res = func(*args, **kwargs)
+            if len(args) <= match_arg_position:
+                return res
+            vec_type = mp_detect_vector(args[match_arg_position])
+            if vec_type == 0:
+                return res
+            new_res = (
+                list(res)
+                if isinstance(res, tuple)
+                else [
+                    res,
+                ]
+            )
+
+            for i in (
+                range(len(new_res))
+                if target_arg_position is None
+                else target_arg_position
+            ):
+                res_vec_type = mp_detect_vector(new_res[i])
+                if res_vec_type != 0 and res_vec_type != vec_type:
+                    new_res[i] = new_res[i].reshape(
+                        (1, -1) if vec_type == 1 else (-1, 1)
+                    )
+
+            return tuple(new_res) if isinstance(res, tuple) else new_res[0]
 
         return wrapper
 
@@ -46,6 +85,26 @@ def mp_argout_wrapper_decorators(nargout: int = 1):
 
 def mp_special_variables(value: float, name: str = ""):
     return value
+
+
+@functools.lru_cache(maxsize=10)
+def mp_inference_nargout_decorators(caller_level: int = 2):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, nargout=None, **kwargs):
+            if nargout is None:
+                nargout = mp_nargout_from_stack(caller_level, func)
+            res = func(*args, **kwargs, nargout=nargout)
+            if not isinstance(res, tuple):
+                # TODO: we should be smarter
+                raise SyntaxWarning(
+                    "mp_inference_nargout_decorators can only be used once"
+                )
+            return res[0] if nargout == 1 else res[:nargout]
+
+        return wrapper
+
+    return decorator
 
 
 @functools.lru_cache(maxsize=50)
@@ -74,16 +133,17 @@ def mp_nargout_from_ast(s: str, func_name: str, co_filename=None, f_lineno=None)
         return 1
 
 
-def mp_nargout_from_stack(caller_level: int = 2):
+def mp_nargout_from_stack(caller_level: int = 2, func=None):
     try:
         current, *_, caller = stack()[1 : (caller_level + 1)]
         frame = caller.frame
         code_context = "\n".join(caller.code_context).strip()
+        function = current.function if func is None else func.__name__
         return mp_nargout_from_ast(
             code_context
-            if re.match(r'[^\'"]+\s*=\s*' + current.function, code_context)
+            if re.match(r'[^\'"]+\s*=\s*' + function, code_context)
             else None,
-            current.function,
+            function,
             frame.f_code.co_filename,
             frame.f_lineno,
         )

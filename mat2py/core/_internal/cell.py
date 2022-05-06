@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from mat2py.common.backends import numpy as np
 
-from .array import M, MatArray, mp_convert_round, mp_convert_scalar, mp_convert_to_2d
+from .array import M, MatArray, mp_convert_round, mp_convert_scalar, mp_try_match_shape
 
 
 class CellArray(MatArray):
@@ -38,7 +38,7 @@ class CellArray(MatArray):
             elif np.size(c) > 1:
                 # c(1:end) case
                 assert isinstance(value, CellArray)
-                value = mp_convert_to_2d(value.view(MatArray), c.shape)
+                value = mp_try_match_shape(value.view(MatArray), c.shape)
                 assert value.shape == c.shape
                 super().__setitem__(key, value)
         return self
