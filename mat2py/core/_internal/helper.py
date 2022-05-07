@@ -2,6 +2,7 @@
 import ast
 import functools
 import re
+from copy import deepcopy
 from inspect import stack
 from pathlib import Path
 
@@ -85,6 +86,26 @@ def mp_argout_wrapper_decorators(nargout: int = 1):
 
 def mp_special_variables(value: float, name: str = ""):
     return value
+
+
+@functools.lru_cache(maxsize=10)
+def mp_pass_values_decorators(args_position: tuple = None):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            args = list(args)
+            # TODO: can we detect temporary right value and avoid deepcopy for throughput? e.g. sys.getrefcount()
+            if args_position is None:
+                return func(*deepcopy(args), **kwargs)
+
+            for p in args_position:
+                if p < len(args):
+                    args[p] = deepcopy(args[p])
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 @functools.lru_cache(maxsize=10)

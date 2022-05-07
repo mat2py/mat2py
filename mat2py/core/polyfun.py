@@ -169,7 +169,7 @@ def xyzvchk(*args):
 
 @mp_inference_nargout_decorators()
 def inpolygon(*args, nargout=None, **kwargs):
-    from mat2py.toolbox.matlab.polyfun.inpolygon import inpolygon as _inpolygon
+    from mat2py.toolbox.matlab.polyfun import inpolygon as _inpolygon
 
     return _inpolygon(*args, **kwargs, nargout=nargout)
 

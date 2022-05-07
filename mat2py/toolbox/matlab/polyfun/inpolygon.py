@@ -110,7 +110,7 @@ def close_loops(xv, yv):
     if _not(any(xnan | ynan)):
         nump = length(xv)
         if nump < 3:
-            return
+            return xv, yv
         if (xv(1) != xv(nump)) or (yv(1) != yv(nump)):
             xv = M[
                 xv,
