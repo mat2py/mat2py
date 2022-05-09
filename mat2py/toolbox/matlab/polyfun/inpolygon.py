@@ -1,6 +1,5 @@
 # type: ignore
 
-import mat2py as mp
 from mat2py.core import *
 
 

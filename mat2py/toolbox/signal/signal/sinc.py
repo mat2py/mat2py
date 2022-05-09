@@ -1,7 +1,6 @@
 # type: ignore
 __all__ = ["sinc", "py_sinc"]
 
-import mat2py as mp
 from mat2py.common.backends import numpy as np
 from mat2py.core import *
 from mat2py.core._internal.helper import (

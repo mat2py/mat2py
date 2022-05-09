@@ -1,5 +1,4 @@
 # type: ignore
-import mat2py as mp
 from mat2py.core import *
 from mat2py.toolbox.signal.signal import sinc
 
