@@ -17,11 +17,13 @@ mat2py mean to be drop-in replacement of Matlab by wrapping Numpy/Scipy/... pack
 
 </div>
 
-For instance usage, try the *Fake Matlab in Browser* [here](https://console.mat2py.org/). 
+For instance usage, try the *Online Matlab Emulator* [here](https://console.mat2py.org/). 
 Please note:
-- You might need quite long time to initilaize the console for the first time. Checkout the browser console or network traffic for progress.
-- Only one line matlab expression supported, for example `[1; 2; 3]*[1 2 3]`.
-- Only few Matlab core functions supported for now.
+- Loading the environment may take quite long time, especially for the first time. Try refresh the page incase bad network connection.
+- Do not support paste chunk of matlab code yet. Please input the code line by line.
+- Do a feature request when encounter `NotImplementedError`.
+
+![Coverage Report](assets/images/console.png)
 
 The final goal is to create a **serverless**, **Matlab compatiable** console completely in end-users' browser.
 
