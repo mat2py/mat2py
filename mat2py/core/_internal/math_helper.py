@@ -118,3 +118,17 @@ def mp_rand_like_decorators():
         return wrapper
 
     return decorator
+
+
+@functools.lru_cache(maxsize=10)
+def mp_type_cast_decorators():
+    def decorator(type_map):
+        @functools.wraps(type_map)
+        def wrapper(a):
+            a = M[a]
+            dtype = type_map(a.dtype)
+            return a.astype(dtype) if a.dtype is not dtype else a
+
+        return wrapper
+
+    return decorator

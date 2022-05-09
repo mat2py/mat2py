@@ -83,7 +83,11 @@ __all__ = [
     "metaclass",
 ]
 
+from mat2py.common.backends import numpy as np
+
+from ._internal import M
 from ._internal.cell import CellArray, cell
+from ._internal.math_helper import mp_type_cast_decorators
 from ._internal.struct import StructArray, struct
 
 
@@ -131,8 +135,9 @@ def findgroups(*args):
     raise NotImplementedError("findgroups")
 
 
-def double(*args):
-    raise NotImplementedError("double")
+@mp_type_cast_decorators()
+def double(dtype):
+    return np.complex128 if np.issubdtype(dtype, np.complex_) else np.float64
 
 
 def _class(*args):
@@ -166,8 +171,9 @@ def cast(*args):
 from ._internal.struct import fieldnames
 
 
-def single(*args):
-    raise NotImplementedError("single")
+@mp_type_cast_decorators()
+def single(dtype):
+    return np.complex64 if np.issubdtype(dtype, np.complex_) else np.float32
 
 
 def struct2cell(*args):

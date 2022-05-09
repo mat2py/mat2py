@@ -145,8 +145,7 @@ eye = mp_zeros_like_decorators(expand_shape=True)(np.eye)
 i = mp_special_variables(1j)
 
 
-def isinf(*args):
-    raise NotImplementedError("isinf")
+isinf = mp_argout_wrapper_decorators()(np.isinf)
 
 
 def flipud(*args):
@@ -429,7 +428,12 @@ def isequalwithequalnans(*args):
 
 @mp_argout_wrapper_decorators()
 def linspace(*args):
-    return np.linspace(*args)
+    if len(args) == 2:
+        args = (*args, 100)
+    assert len(args) == 3
+    x1, x2, n = map(mp_convert_scalar, args)
+    n = mp_convert_round(n)
+    return np.linspace(x1, x2, n)
 
 
 def bsxfun(fun, a, b):

@@ -128,6 +128,18 @@ def mp_inference_nargout_decorators(caller_level: int = 2):
     return decorator
 
 
+@functools.lru_cache(maxsize=10)
+def mp_inference_nargin_decorators():
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args):
+            return func(*args, nargin=len(args))
+
+        return wrapper
+
+    return decorator
+
+
 @functools.lru_cache(maxsize=50)
 def mp_nargout_from_ast(s: str, func_name: str, co_filename=None, f_lineno=None):
     try:

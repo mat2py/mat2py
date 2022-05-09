@@ -201,3 +201,19 @@ def test_isequal():
     assert isequal(A1, A2) == 1
     assert isequal(A1, A2, A3) == 1
     assert isequal(A3, A4) == 0
+
+
+def test_linspace():
+    Nz = floor(190 / 1)
+    x = linspace(0, M[0.02], Nz)
+    assert_same_array(size(x), M[[1, 190]])
+    assert_same_array(
+        M[x(1), x(2) - x(1), x(end) - x(end - 1), x(end)],
+        M[0, 0.02 / 189, 0.02 / 189, 0.02],
+        close=True,
+    )
+
+    from mat2py.toolbox.matlab.elmat.linspace import linspace as matlab_linspace
+
+    x2 = matlab_linspace(0, M[0.02], Nz)
+    assert_same_array(x, x2, close=True)
