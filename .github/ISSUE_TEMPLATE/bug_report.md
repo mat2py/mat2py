@@ -26,7 +26,7 @@ Steps to reproduce the behavior:
 * Python version, get it with:
 
 ```bash
-python --version
+python -c "import sys,scipy,numpy,mat2py; print(f'Python: {sys.version}\nNumpy: {numpy.__version__}\nScipy: {scipy.__version__}\nMat2Py: {mat2py.version}')"
 ```
 
 ### Screenshots
