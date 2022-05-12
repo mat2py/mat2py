@@ -41,10 +41,7 @@ __all__ = [
     "xychk",
 ]
 
-from mat2py.core._internal.helper import (
-    mp_inference_nargout_decorators,
-    mp_nargout_from_stack,
-)
+from mat2py.core._internal.helper import mp_inference_nargout_decorators
 
 
 def unmkpp(*args):

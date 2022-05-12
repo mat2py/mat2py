@@ -63,8 +63,8 @@ from mat2py.common.backends import numpy as np
 from ._internal.array import M, colon
 from ._internal.helper import (
     mp_argout_wrapper_decorators,
+    mp_inference_nargout_decorators,
     mp_last_arg_as_kwarg,
-    mp_nargout_from_stack,
 )
 from ._internal.math_helper import mp_sum_like_decorators
 
@@ -122,16 +122,14 @@ def arith(*args):
     raise NotImplementedError("arith")
 
 
+@mp_inference_nargout_decorators()
 @mp_last_arg_as_kwarg("row_as_one", ("rows",))
 def ismember(a, b, row_as_one=False, nargout=None):
-    if nargout is None:
-        nargout = mp_nargout_from_stack(3)
-
     if row_as_one:
         raise NotImplementedError("ismember")
 
     if nargout == 1:
-        return M[np.isin(a, b)]
+        return (M[np.isin(a, b)],)
 
     a_shape = np.shape(a)
     a = a.reshape(-1)

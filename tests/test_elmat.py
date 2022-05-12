@@ -92,6 +92,9 @@ def test_isempty():
     assert_same_array(isempty(A), M[0])
     assert_same_array(isempty(B), M[1])
 
+    C = M[[False, False, False], [False, True, False], [False, False, False]]
+    assert_same_array(isempty(find(C, 1)), M[0])
+
 
 def test_meshgrid():
     x = M[0:2:3]
@@ -99,6 +102,11 @@ def test_meshgrid():
     z = M[0:3:3]
 
     X, Y, Z = meshgrid(x, y, z)
+    X2 = meshgrid(x, y, z)
+    assert_same_array(X, X2)
+    X3, Y3 = meshgrid(x, y, z)
+    assert_same_array(X, X3)
+    assert_same_array(Y, Y3)
     assert_same_array(
         X[I[:, :, 1]],
         M[

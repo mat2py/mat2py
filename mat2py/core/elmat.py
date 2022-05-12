@@ -96,7 +96,6 @@ from ._internal.helper import (
     mp_inference_nargout_decorators,
     mp_last_arg_as_kwarg,
     mp_match_vector_direction,
-    mp_nargout_from_stack,
     mp_special_variables,
 )
 from ._internal.math_helper import mp_zeros_like_decorators
@@ -267,15 +266,13 @@ def isrow(*args):
     raise NotImplementedError("isrow")
 
 
+@mp_inference_nargout_decorators()
 def meshgrid(x, *args, nargout=None):
-    if nargout is None:
-        nargout = mp_nargout_from_stack()
-
-    if nargout != 1 + len(args):
+    if nargout > 1 + len(args):
         assert len(args) == 0
         args = (x,) * (nargout - 1)
 
-    return tuple(M[i] for i in np.meshgrid(x, *args))
+    return tuple(M[i] for i in np.meshgrid(x, *args))[:nargout]
 
 
 eps = mp_special_variables(np.finfo(float).eps)
@@ -378,12 +375,10 @@ inf = mp_special_variables(np.inf)
 Inf = inf
 
 
-@mp_match_vector_direction()
+@mp_inference_nargout_decorators()
 @mp_last_arg_as_kwarg("direction", ("first", "last"))
+@mp_match_vector_direction()
 def find(x, *args, direction="first", nargout=None):
-    if nargout is None:
-        nargout = mp_nargout_from_stack(4)
-
     if len(args) == 0:
         if nargout == 2:
             r, c = M[x].nonzero()
@@ -395,9 +390,9 @@ def find(x, *args, direction="first", nargout=None):
 
         ind = np.where(x)
         if x.ndim < 2:
-            return M[ind[0].reshape((1, -1) if x.shape[0] == 1 else (-1, 1)) + 1]
+            return (M[ind[0].reshape((1, -1) if x.shape[0] == 1 else (-1, 1)) + 1],)
         else:
-            return M[np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)]
+            return (M[np.sort(ind[0] + ind[1] * x.shape[0] + 1).reshape(-1, 1)],)
 
     assert len(args) == 1
     n = mp_convert_scalar(mp_convert_round(args[0]))
@@ -406,9 +401,9 @@ def find(x, *args, direction="first", nargout=None):
     res = find(x, nargout=nargout)
 
     if direction == "first":
-        return res[:n] if nargout == 1 else (res[0][:n], res[1][:n])
+        return (res[:n],) if nargout == 1 else (res[0][:n], res[1][:n])
     else:
-        return res[-n:] if nargout == 1 else (res[0][-n:], res[1][-n:])
+        return (res[-n:],) if nargout == 1 else (res[0][-n:], res[1][-n:])
 
 
 def triu(*args):

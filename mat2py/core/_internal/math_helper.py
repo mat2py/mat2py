@@ -4,11 +4,7 @@ import functools
 from mat2py.common.backends import numpy as np
 
 from .array import M, mp_convert_round, mp_convert_scalar
-from .helper import (
-    mp_inference_nargout_decorators,
-    mp_last_arg_as_kwarg,
-    mp_nargout_from_stack,
-)
+from .helper import mp_inference_nargout_decorators, mp_last_arg_as_kwarg
 
 
 @functools.lru_cache(maxsize=10)

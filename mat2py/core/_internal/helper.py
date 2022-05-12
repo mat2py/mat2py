@@ -7,6 +7,7 @@ from inspect import stack
 from pathlib import Path
 
 from mat2py.common.backends import numpy as np
+from mat2py.common.utils import Singleton
 
 from .array import M, mp_detect_vector
 
@@ -140,45 +141,86 @@ def mp_inference_nargin_decorators():
     return decorator
 
 
-@functools.lru_cache(maxsize=50)
-def mp_nargout_from_ast(s: str, func_name: str, co_filename=None, f_lineno=None):
-    try:
-        if s is None:
-            raise SyntaxError
-        tree = ast.parse(s.strip()).body[0]
-    except SyntaxError:
-        # ToDo: use a new method as lib2to3 not supported in pyodide
-        from .metacode import GetStatement
+class CodeContext(metaclass=Singleton):
+    def __init__(self):
+        self.code = ""
+        self.co_filename = None
+        self.f_lineno = None
+        self.__ast__ = None
+        # for console_mode, co_filename and f_lineno will be ignored
+        self.console_mode = False
 
-        s = str(GetStatement(Path(co_filename).read_text(), f_lineno))
-        tree = ast.parse(s.strip()).body[0]
+    def init(self, console_mode=True):
+        self.code = ""
+        self.co_filename = None
+        self.f_lineno = None
+        self.__ast__ = None
 
-    if (
-        isinstance(tree, ast.Assign)
-        and isinstance(tree.value, ast.Call)
-        and tree.value.func.id == func_name
-        and isinstance(
-            tree.targets[0], ast.Tuple
-        )  # `a, = func()` not allowed in matlab
-    ):
-        return len(tree.targets[0].elts)
-    else:
-        return 1
+        self.console_mode = console_mode
+
+    @property
+    def ast(self):
+        if self.__ast__ is None:
+            try:
+                self.__ast__ = ast.parse(self.code).body[0]
+            except (SyntaxError, IndexError):
+                assert not self.console_mode
+                # ToDo: use a new method as lib2to3 not supported in pyodide
+                from .metacode import GetStatement
+
+                code = str(
+                    GetStatement(Path(self.co_filename).read_text(), self.f_lineno)
+                ).strip()
+                self.__ast__ = ast.parse(code).body[0]
+
+        return self.__ast__
+
+    def __call__(self, code: str, co_filename=None, f_lineno=None):
+        if self.console_mode:
+            code = code.strip()
+            if code is not "" and code != self.code:
+                self.code = code
+                self.__ast__ = None
+        elif co_filename != self.co_filename or f_lineno != self.f_lineno:
+            self.co_filename = co_filename
+            self.f_lineno = f_lineno
+            self.code = code.strip()
+            self.__ast__ = None
+
+        return self
+
+    def nargout(self, func_name: str):
+        tree = self.ast
+        if (
+            isinstance(tree, ast.Assign)
+            and isinstance(tree.value, ast.Call)
+            and tree.value.func.id == func_name
+            and isinstance(
+                tree.targets[0], ast.Tuple
+            )  # `a, = func()` not allowed in matlab
+        ):
+            return len(tree.targets[0].elts)
+        else:
+            return 1
 
 
 def mp_nargout_from_stack(caller_level: int = 2, func=None):
+    context = CodeContext()
+    current, *_, caller = stack()[1 : (caller_level + 1)]
+    function = func.__name__ if func is not None else current.function
+
+    if context.console_mode:
+        return context.nargout(function)
+
     try:
-        current, *_, caller = stack()[1 : (caller_level + 1)]
+        code_context = "\n".join(caller.code_context or []).strip()
         frame = caller.frame
-        code_context = "\n".join(caller.code_context).strip()
-        function = current.function if func is None else func.__name__
-        return mp_nargout_from_ast(
-            code_context
-            if re.match(r'[^\'"]+\s*=\s*' + function, code_context)
-            else None,
-            function,
-            frame.f_code.co_filename,
-            frame.f_lineno,
+        co_filename = frame.f_code.co_filename
+        f_lineno = frame.f_lineno
+
+        return context(code_context, co_filename, f_lineno).nargout(function)
+
+    except Exception:
+        raise SyntaxWarning(
+            "failed to inference nargout from call stack, pass the information explicitly"
         )
-    except (AttributeError, IndexError):
-        return 1
