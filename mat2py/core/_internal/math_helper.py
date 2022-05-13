@@ -36,10 +36,9 @@ def mp_sum_like_decorators(default_if_empty=None):
 
 @functools.lru_cache(maxsize=10)
 def mp_max_like_decorators():
-    def decorator(func, argfunc, pfunc, nanfunc):
-        @functools.wraps(func)
-        @mp_inference_nargout_decorators()
+    def decorator(func, argfunc, pfunc, nanfunc, name=None):
         @mp_last_arg_as_kwarg("nanflag", ("omitnan", "includenan"))
+        @functools.wraps(func)
         def wrapper(*args, nanflag="omitnan", nargout=None):
             if nargout == 2:
                 # argfunc(*args)
@@ -59,7 +58,9 @@ def mp_max_like_decorators():
             else:
                 return (M[pfunc(*args)],)
 
-        return wrapper
+        if name is not None:
+            wrapper.__name__ = name
+        return mp_inference_nargout_decorators()(wrapper)
 
     return decorator
 

@@ -60,8 +60,8 @@ sum = mp_sum_like_decorators(default_if_empty=0)(np.sum)
 prod = mp_sum_like_decorators(default_if_empty=1)(np.prod)
 mean = mp_sum_like_decorators()(np.mean)
 median = mp_sum_like_decorators()(np.median)
-max = mp_max_like_decorators()(np.max, np.argmax, np.maximum, np.nanmax)
-min = mp_max_like_decorators()(np.min, np.argmax, np.minimum, np.nanmin)
+max = mp_max_like_decorators()(np.amax, np.argmax, np.maximum, np.nanmax, name="max")
+min = mp_max_like_decorators()(np.amin, np.argmin, np.minimum, np.nanmin, name="min")
 
 
 def mode(*args):
