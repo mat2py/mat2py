@@ -161,7 +161,7 @@ class CodeContext(metaclass=Singleton):
 
     def __call__(self, code: str):
         code = code.strip()
-        if code is not "" and code != self.code:
+        if code != "" and code != self.code:
             self.code = code
             self.__ast__ = None
 
@@ -202,7 +202,7 @@ def mp_nargout_from_stack(caller_level: int = 2, func=None):
                     raise NotImplementedError(
                         "only one statement supported in one line for now"
                     )
-                elif caller.filename == "<stdin>":
+                elif caller.filename in ("<stdin>", "<console>"):
                     raise ValueError("can not identify source code, seems to be IDLE")
                 raise SystemError
         except ValueError:
