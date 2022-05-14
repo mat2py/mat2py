@@ -147,13 +147,10 @@ class CodeContext(metaclass=Singleton):
     def __init__(self):
         self.code = None
         self.__ast__ = None
-        # for console_mode, co_filename and f_lineno will be ignored
-        self.console_mode = False
 
-    def init(self, console_mode=True):
+    def reset(self):
         self.code = None
         self.__ast__ = None
-        self.console_mode = console_mode
 
     @property
     def ast(self):
@@ -190,20 +187,27 @@ def mp_nargout_from_stack(caller_level: int = 2, func=None):
     function = func.__name__ if func is not None else current.function
 
     try:
-        frame_meta = executing.Source.executing(caller.frame)
-        if frame_meta.node is not None:
-            call_node = frame_meta.node
-            assert isinstance(call_node, ast.Call) and call_node.func.id == function
-            return mp_nargout_from_ast(call_node.parent, function)
-        else:
-            # TODO: what if multiple statement in one line? how to handle multiple call with same function?
-            (ast_tree,) = frame_meta.statements
-            return mp_nargout_from_ast(ast_tree, function)
-    except Exception as err:
-        code_context = "\n".join(caller.code_context or []).strip()
-        context = CodeContext()
-        tree_ast = context(code_context).ast
-
+        try:
+            frame_meta = executing.Source.executing(caller.frame)
+            if frame_meta.node is not None:
+                call_node = frame_meta.node
+                assert isinstance(call_node, ast.Call) and call_node.func.id == function
+                return mp_nargout_from_ast(call_node.parent, function)
+            else:
+                if len(frame_meta.statements) == 1:
+                    (ast_tree,) = frame_meta.statements
+                    # TODO: how to handle multiple call with same function?
+                    return mp_nargout_from_ast(ast_tree, function)
+                elif frame_meta.statements:
+                    raise NotImplementedError(
+                        "only one statement supported in one line for now"
+                    )
+                elif caller.filename == "<stdin>":
+                    raise ValueError("can not identify source code, seems to be IDLE")
+                raise SystemError
+        except ValueError:
+            return mp_nargout_from_ast(CodeContext().ast, function)
+    except Exception:
         raise SyntaxWarning(
             "failed to inference nargout from call stack, pass the information explicitly"
         )
