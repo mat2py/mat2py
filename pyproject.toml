@@ -60,6 +60,10 @@ pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
 matplotlib = "^3.5.1"
 mh-python = "^0.0.9"
+pandas = [
+  {version = "~1.1", python = "<3.7.1"},
+  {version = "^1.2", python = ">=3.7.1"}
+]
 
 [tool.black]
 # https://github.com/psf/black
