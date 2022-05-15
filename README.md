@@ -19,13 +19,30 @@ mat2py mean to be drop-in replacement of Matlab by wrapping Numpy/Scipy/... pack
 
 For instance usage, try the *Online Matlab Emulator* [here](https://console.mat2py.org/). 
 Please note:
+- You may need the latest modern browser for using this APP(check the console log by pressing F12).
 - Loading the environment may take quite long time, especially for the first time. Try refresh the page incase bad network connection.
-- Do not support paste chunk of matlab code yet. Please input the code line by line.
 - Do a feature request when encounter `NotImplementedError`.
 
 ![Coverage Report](assets/images/console.png)
 
-The final goal is to create a **serverless**, **Matlab compatiable** console completely in end-users' browser.
+Try copy-paste following code to the emulator and feel its capability:
+
+```matlab
+xv = [0.5;0.2;1.0;0;0.8;0.5];
+yv = [1.0;0.1;0.7;0.7;0.1;1];
+xq = [0.1;0.5;0.9;0.2;0.4;0.5;0.5;0.9;0.6;0.8;0.7;0.2];
+yq = [0.4;0.6;0.9;0.7;0.3;0.8;0.2;0.4;0.4;0.6;0.2;0.6];
+
+[in,on] = inpolygon(xq,yq,xv,yv);
+
+plot(xv,yv, ... % polygon
+     xq(in&~on),yq(in&~on),'r+', ...  % points strictly inside
+     xq(on),yq(on),'k*', ... % points on edge
+     xq(~in),yq(~in),'bo' ... % points outside
+)
+```
+
+The final goal of this APP is to create a **serverless**, **Matlab compatiable** console completely in end-users' browser.
 
 ## First Steps
 
