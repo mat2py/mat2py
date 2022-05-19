@@ -53,7 +53,12 @@ import functools
 
 from mat2py.common.backends import numpy as np
 
-from ._internal.array import M, mp_convert_scalar
+from ._internal.array import (
+    M,
+    mp_can_cast_to_scalar,
+    mp_convert_round,
+    mp_convert_scalar,
+)
 from ._internal.math_helper import mp_max_like_decorators, mp_sum_like_decorators
 
 sum = mp_sum_like_decorators(default_if_empty=0)(np.sum)
@@ -76,8 +81,31 @@ def fftw(*args):
     raise NotImplementedError("fftw")
 
 
-def trapz(*args):
-    raise NotImplementedError("trapz")
+def trapz(Y, *args):
+    X = None
+    dim = None
+    dx = 1.0
+
+    if len(args) == 2:
+        X, Y, dim = (Y, *args)
+    if len(args) == 1:
+        if mp_can_cast_to_scalar(args[0]):
+            dim = args[0]
+        else:
+            X, Y = Y, args[0]
+
+    if dim is not None:
+        dim = mp_convert_scalar(mp_convert_round(dim)) - 1
+    else:
+        dim = next(i for i, d in enumerate(np.shape(Y)) if d > 1)
+
+    if X is not None:
+        if mp_can_cast_to_scalar(X):
+            X, dx = None, mp_convert_scalar(X)
+        else:
+            X = X.reshape(-1)
+
+    return M[np.trapz(Y, X, dx, dim)]
 
 
 def diff(a):

@@ -54,7 +54,9 @@ __all__ = [
     "lower",
 ]
 
-from ._internal.array import M
+from mat2py.common.backends import numpy as np
+
+from ._internal.array import M, mp_convert_scalar, mp_detect_vector
 
 
 def regexptranslate(*args):
@@ -102,6 +104,8 @@ def native2unicode(*args):
 
 
 def strcat(*args):
+    if all(isinstance(arg, str) for arg in args):
+        return "".join(args).rstrip()
     raise NotImplementedError("strcat")
 
 
@@ -253,8 +257,26 @@ def strncmpi(*args):
     raise NotImplementedError("strncmpi")
 
 
-def num2str(a):
-    return M[a].astype(str)
+def num2str(a, *args):
+    if args:
+        raise NotImplementedError("num2str")
+    s = M[a]
+    assert np.issubdtype(s.dtype, np.number)
+    if np.size(s) == 1:
+        return str(mp_convert_scalar(a))
+
+    # TODO: not compatible with Matlab, we need character array
+    s = s.astype(str).view(np.ndarray)
+
+    if mp_detect_vector(s) == 1:
+        return " ".join(s.reshape(-1))
+
+    max_length = np.apply_along_axis(lambda c: max(len(i) for i in c), 0, s)
+    s = np.apply_along_axis(
+        lambda r: " ".join(s.rjust(l, " ") for s, l in zip(r, max_length)), 1, s
+    )
+
+    return M[s].reshape(-1, 1)
 
 
 def bin2dec(*args):

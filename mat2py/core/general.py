@@ -101,6 +101,7 @@ from types import SimpleNamespace as _SimpleNamespace
 import scipy.io
 
 from mat2py.common.backends import numpy as np
+from mat2py.common.logger import logger
 
 from ._internal.array import M, mp_convert_scalar
 from ._internal.cell import cell
@@ -188,7 +189,7 @@ def depfunprophelper(*args):
 
 
 def format(*args):
-    raise NotImplementedError("format")
+    logger.warning('NotImplementedError("format")')
 
 
 def javarmpath(*args):

@@ -70,6 +70,8 @@ __all__ = [
     "fclose",
 ]
 
+from mat2py.common.logger import logger
+
 
 def home(*args):
     raise NotImplementedError("home")
@@ -128,7 +130,7 @@ def createClassFromWsdl(*args):
 
 
 def fopen(*args):
-    raise NotImplementedError("fopen")
+    logger.warning('NotImplementedError("fopen")')
 
 
 def zip(*args):
@@ -180,7 +182,8 @@ def dlmread(*args):
 
 
 def fprintf(*args):
-    raise NotImplementedError("fprintf")
+    logger.warning('NotImplementedError("fprintf")')
+    print(args)
 
 
 def importdata(*args):
@@ -336,4 +339,4 @@ def timercb(*args):
 
 
 def fclose(*args):
-    raise NotImplementedError("fclose")
+    logger.warning('NotImplementedError("fclose")')

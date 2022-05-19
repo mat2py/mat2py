@@ -74,6 +74,7 @@ end = End()
 
 
 def mp_detect_vector(x):
+    """matrix - 0, column vector - -1, row vector - +1"""
     if not isinstance(x, np.ndarray) or x.ndim > 2:
         return 0
     if x.ndim == 2 and x.shape[1] == 1:
@@ -84,6 +85,10 @@ def mp_detect_vector(x):
 def mp_can_cast_to_number(x):
     dtype = M[x].dtype
     return np.issubdtype(dtype, np.number) or np.issubdtype(dtype, np.bool_)
+
+
+def mp_can_cast_to_scalar(x):
+    return M[x].shape in ((1, 1), (1,))
 
 
 def mp_convert_scalar(x):

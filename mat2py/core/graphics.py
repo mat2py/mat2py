@@ -1,6 +1,7 @@
 # type: ignore
 
 __all__ = [
+    "close",
     "gobjects",
     "closereq",
     "vertexpicker",
@@ -109,6 +110,8 @@ __all__ = [
     "graphicsversion",
     "printpreview",
 ]
+
+from mat2py.common.logger import logger
 
 
 def gobjects(*args):
@@ -407,6 +410,11 @@ def hggetdisp(*args):
 
 def figure(*args):
     raise NotImplementedError("figure")
+
+
+def close(*args):
+    logger.warning('NotImplementedError("format")')
+    return 1
 
 
 def gcf(*args):

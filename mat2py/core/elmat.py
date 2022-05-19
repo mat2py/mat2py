@@ -87,6 +87,7 @@ from ._internal.array import (
     M,
     ind2sub,
     mp_can_cast_to_number,
+    mp_can_cast_to_scalar,
     mp_convert_round,
     mp_convert_scalar,
 )
@@ -352,8 +353,8 @@ def isempty(a):
     return M[int(np.size(a) == 0)]
 
 
-def isscalar(*args):
-    raise NotImplementedError("isscalar")
+def isscalar(a):
+    return M[int(mp_can_cast_to_scalar(a))]
 
 
 def magic(*args):
