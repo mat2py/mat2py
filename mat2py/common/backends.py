@@ -9,3 +9,4 @@ py_all = all
 py_any = any
 py_eval = eval
 py_slice = slice
+py_zip = zip

@@ -70,7 +70,15 @@ __all__ = [
     "fclose",
 ]
 
+import itertools
+
+from mat2py.common.backends import numpy as np
+from mat2py.common.backends import py_zip
 from mat2py.common.logger import logger
+
+from ._internal.array import M, mp_convert_scalar
+from ._internal.helper import mp_inference_nargout_decorators
+from ._internal.object_handles import FileIdentifier, openedFiles
 
 
 def home(*args):
@@ -129,8 +137,30 @@ def createClassFromWsdl(*args):
     raise NotImplementedError("createClassFromWsdl")
 
 
-def fopen(*args):
-    logger.warning('NotImplementedError("fopen")')
+@mp_inference_nargout_decorators()
+def fopen(filename, *args, nargout=None):
+    if filename == "all":
+        return (M[openedFiles.keys()],)
+
+    if nargout > 1:
+        raise NotImplementedError("fopen")
+
+    filename = mp_convert_scalar(filename)
+    if isinstance(filename, FileIdentifier):
+        return (openedFiles.get_name(filename),)
+
+    permission = "r"
+    if args:
+        permission = args[0]
+        if len(args) > 1:
+            logger.warning('NotImplementedError("fopen")')
+
+    try:
+        fp = open(filename, permission, buffering=1)
+        return (openedFiles.insert(fp, start_id=3),)
+    except Exception as err:
+        logger.warning(err)
+        return (FileIdentifier(-1),)
 
 
 def zip(*args):
@@ -181,9 +211,26 @@ def dlmread(*args):
     raise NotImplementedError("dlmread")
 
 
-def fprintf(*args):
-    logger.warning('NotImplementedError("fprintf")')
-    print(args)
+def fprintf(fileID, formatSpec, *args):
+    if not isinstance(fileID, FileIdentifier):
+        fileID, formatSpec, args = 1, fileID, (formatSpec, *args)
+
+    if isinstance(formatSpec, np.ndarray):
+        formatSpec = "".join(formatSpec.reshape(-1).tolist())
+
+    content = formatSpec
+    n = formatSpec.count("%") - 2 * formatSpec.count("%%")
+    if args and n > 0:
+        # Matlab actually support incomplete format but mat2py will drop the last in-complete one
+        # assert sum(np.size(a) if isinstance(a, np.ndarray) else 1 for a in args)%n == 0
+        args = itertools.chain.from_iterable(
+            a.reshape(-1, order="F").tolist() if isinstance(a, np.ndarray) else (a,)
+            for a in args
+        )
+        content = "".join(formatSpec % arg for arg in py_zip(*[args] * n))
+
+    openedFiles.get_fp(fileID).write(content)
+    return len(content)
 
 
 def importdata(*args):
@@ -338,5 +385,12 @@ def timercb(*args):
     raise NotImplementedError("timercb")
 
 
-def fclose(*args):
-    logger.warning('NotImplementedError("fclose")')
+def fclose(fileID: FileIdentifier):
+    fileIDs = openedFiles.keys() if fileID == "all" else (fileID,)
+    try:
+        for f in fileIDs:
+            openedFiles.pop(f).close()
+        return 0
+    except Exception as err:
+        logger.warning(err)
+        return -1

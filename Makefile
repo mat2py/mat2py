@@ -99,9 +99,13 @@ ipynbcheckpoints-remove:
 pytestcache-remove:
 	find . | grep -E ".pytest_cache" | xargs rm -rf
 
+.PHONY: build
+build:
+	poetry build -f wheel
+
 .PHONY: build-remove
 build-remove:
-	rm -rf build/
+	rm -rf dist/
 
 #* Poetry
 .PHONY: poetry-download
