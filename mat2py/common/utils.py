@@ -1,10 +1,13 @@
-# type: ignore
+__all__ = ["Singleton", "action_on_warnings"]
+
+from typing import Dict
+
 import warnings
 from functools import wraps
 
 
 class Singleton(type):
-    _instances = {}
+    _instances: Dict[type, object] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:

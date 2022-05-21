@@ -8,7 +8,9 @@ from pathlib import Path
 
 import executing
 
+import mat2py.config
 from mat2py.common.backends import numpy as np
+from mat2py.common.logger import logger
 from mat2py.common.utils import Singleton
 
 from .array import M, mp_detect_vector
@@ -182,7 +184,13 @@ def mp_nargout_from_ast(ast_tree, func_name: str):
         return 1
 
 
-def mp_nargout_from_stack(caller_level: int = 2, func=None):
+def mp_nargout_from_stack(
+    caller_level: int = 2,
+    func=None,
+    default_if_exception: int = 1
+    if mat2py.config.ignore_nargout_inference_exception
+    else None,
+):
     current, *_, caller = stack()[1 : (caller_level + 1)]
     function = func.__name__ if func is not None else current.function
 
@@ -207,7 +215,13 @@ def mp_nargout_from_stack(caller_level: int = 2, func=None):
                 raise SystemError
         except ValueError:
             return mp_nargout_from_ast(CodeContext().ast, function)
-    except Exception:
-        raise SyntaxWarning(
-            "failed to inference nargout from call stack, pass the information explicitly"
-        )
+    except Exception as err:
+        if default_if_exception is None:
+            raise SyntaxWarning(
+                "failed to inference nargout from call stack, pass the information explicitly"
+            )
+        else:
+            logger.warning(
+                f"failed to inference nargout from call stack, set it to be {default_if_exception}: {err}"
+            )
+            return default_if_exception
