@@ -86,7 +86,7 @@ def tic(nargout=0):
     return tic.timerVal
 
 
-def toc(*args, nargout=1):
+def toc(*args, nargout=0):
     interval = _time() - (args[0] if args else tic.timerVal)
     if nargout == 0:
         print(f"Elapsed time is {interval:10.5g} seconds.")

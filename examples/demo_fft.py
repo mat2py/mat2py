@@ -1,8 +1,10 @@
 # type: ignore
+from mat2py.common.backends import py_profile
 from mat2py.core import *
 from mat2py.toolbox.signal.signal import sinc
 
 
+@py_profile
 def my_fft(x):
     N = numel(x)
     xp = x[I[1:2:end]]

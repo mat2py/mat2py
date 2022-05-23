@@ -322,8 +322,14 @@ def realmax(*args):
 false = mp_special_variables(False)
 
 
-def flip(*args):
-    raise NotImplementedError("flip")
+def flip(a, dim=None):
+    if dim is None:
+        if mp_can_cast_to_scalar(a):
+            return a
+        dim = next(d for d, s in enumerate(np.shape(a)) if s > 1)
+    else:
+        dim = mp_convert_scalar(mp_convert_round(dim)) - 1
+    return np.flip(a, dim)
 
 
 zeros = mp_zeros_like_decorators()(np.zeros)

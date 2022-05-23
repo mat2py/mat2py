@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "mat2py"
-version = "0.0.19"
+version = "0.0.20"
 description = "mat2py mean to be drop-in replacement of Matlab by wrapping Numpy/Scipy/... packages."
 readme = "README.md"
 authors = ["mat2py <chaoqingwang.nick@gmail.com>"]
@@ -59,11 +59,13 @@ coverage-badge = "^1.1.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
 matplotlib = "^3.5.1"
-mh-python = "^0.0.9"
+mh-python = "^0.0.10"
 pandas = [
   {version = "~1.1", python = "<3.7.1"},
   {version = "^1.2", python = ">=3.7.1"}
 ]
+snakeviz = "^2.1.1"
+line-profiler = "^3.5.1"
 
 [tool.black]
 # https://github.com/psf/black

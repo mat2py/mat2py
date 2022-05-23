@@ -78,7 +78,7 @@ from mat2py.common.backends import numpy as np
 from ._internal.array import M
 from ._internal.helper import mp_argout_wrapper_decorators
 
-(exp, real, imag, abs, angle, conj, sin, cos, sinh, cosh, tan, tanh, sqrt) = (
+(exp, real, imag, abs, angle, conj, sin, cos, sinh, cosh, tan, atan, tanh, sqrt) = (
     mp_argout_wrapper_decorators()(f)
     for f in (
         np.exp,
@@ -92,6 +92,7 @@ from ._internal.helper import mp_argout_wrapper_decorators
         np.sinh,
         np.cosh,
         np.tan,
+        np.arctan,
         np.tanh,
         np.sqrt,
     )
@@ -104,10 +105,6 @@ def log(*args):
 
 def sech(*args):
     raise NotImplementedError("sech")
-
-
-def atan(*args):
-    raise NotImplementedError("atan")
 
 
 def cot(*args):
