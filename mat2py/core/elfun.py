@@ -139,8 +139,7 @@ def acotd(*args):
     raise NotImplementedError("acotd")
 
 
-def mod(*args):
-    raise NotImplementedError("mod")
+mod = np.mod
 
 
 def acosh(*args):
