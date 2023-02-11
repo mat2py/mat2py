@@ -166,8 +166,13 @@ def asec(*args):
     raise NotImplementedError("asec")
 
 
-def complex(*args):
-    raise NotImplementedError("complex")
+def complex(a, *args):
+    if len(args) == 0:
+        return a + 0j
+    (b,) = args
+    assert not (np.iscomplexobj(a) or np.iscomplexobj(b))
+
+    return a + 1j * b
 
 
 def floor(x, *args):
