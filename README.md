@@ -67,10 +67,10 @@ python3 -m pip install -U mh-python
 
 ```bash
 # download the one already converted and formatted
-wget https://raw.githubusercontent.com/mat2py/mat2py/main/tests/test_example/demo_fft.py
+wget https://raw.githubusercontent.com/mat2py/mat2py/main/examples/demo_fft.py
 
 # or convert it yourself
-echo "wget https://raw.githubusercontent.com/mat2py/miss_hit/matlab2numpy/tests/mat2np/demo_fft.m"
+echo "wget https://raw.githubusercontent.com/mat2py/mat2py/main/examples/demo_fft.m"
 echo "mh_python --python-alongside --format demo_fft.m"
 
 # run it...
