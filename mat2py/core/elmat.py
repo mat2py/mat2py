@@ -109,12 +109,10 @@ def realmin(*args):
 
 def reshape(x, *args):
     if len(args) == 1 and isinstance(args[0], np.ndarray) and np.size(args[0]) > 0:
-        return x.reshape(args[0].reshape(-1).astype(int), order="F")
+        shape = tuple(int(i) for i in args[0].reshape(-1))
     else:
-        shape = tuple(-1 if np.size(i) == 0 else i for i in args)
-        return x.reshape(shape, order="F")
-
-    raise NotImplementedError("reshape")
+        shape = tuple(-1 if np.size(i) == 0 else int(i) for i in args)
+    return x.reshape(shape, order="F")
 
 
 nan = mp_special_variables(np.nan)

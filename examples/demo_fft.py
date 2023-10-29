@@ -56,7 +56,7 @@ def demo_fft():
     rng("default")
     t = M[1:10]
     x = randn(size(t)).H
-    ts = linspace(-5, 15, 2 ** 9)
+    ts = linspace(-5, 15, 2**9)
     Ts, T = ndgrid(ts, t)
     y = sinc(Ts - T) @ M[x]
     f = my_fft(y)

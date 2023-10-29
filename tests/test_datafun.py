@@ -63,6 +63,6 @@ def test_trapz():
     x = M[(-3):0.1:3]
     y = M[(-5):0.1:5]
     X, Y = meshgrid(x, y)
-    F = (X ** 2) + (Y ** 2)
+    F = (X**2) + (Y**2)
     _I = trapz(y, trapz(x, F, 2))
     assert_same_array(_I, M[680.2000], close=True)

@@ -107,6 +107,15 @@ build:
 build-remove:
 	rm -rf dist/
 
+#* Pyenv
+.PHONY: pyenv-install
+pyenv-install:
+	curl --silent https://pyenv.run | bash
+	@echo 'export PYENV_ROOT="$$HOME/.pyenv"' >> ~/.bashrc
+	@echo 'command -v pyenv >/dev/null || export PATH="$$PYENV_ROOT/bin:$$PATH"' >> ~/.bashrc
+	@echo 'eval "$$(pyenv init -)"' >> ~/.bashrc
+	@echo 'Restart shell and run like "pyenv install 3.11 && pyenv local 3.11" to active new python version'
+
 #* Poetry
 .PHONY: poetry-download
 poetry-download:
